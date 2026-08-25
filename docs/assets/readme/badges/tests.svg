@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="159" height="28" role="img" aria-label="Tests passing">
+  <title>Tests passing</title>
+  <rect width="159" height="28" rx="6" fill="#111827"/>
+  <rect x="55" width="104" height="28" rx="6" fill="#0369A1"/>
+  <path d="M55 0h6v28h-6z" fill="#0369A1"/>
+  <text x="28" y="19" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="12" text-anchor="middle">tests</text>
+  <text x="107" y="19" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle">11 passing</text>
+</svg>

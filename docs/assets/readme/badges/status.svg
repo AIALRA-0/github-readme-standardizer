@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="154" height="28" role="img" aria-label="Status maintained">
+  <title>Status maintained</title>
+  <rect width="154" height="28" rx="6" fill="#111827"/>
+  <rect x="72" width="82" height="28" rx="6" fill="#15803D"/>
+  <path d="M72 0h6v28h-6z" fill="#15803D"/>
+  <text x="36" y="19" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="12" text-anchor="middle">status</text>
+  <text x="113" y="19" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle">maintained</text>
+</svg>

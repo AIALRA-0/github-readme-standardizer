@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="178" height="28" role="img" aria-label="Documentation Chinese first and English">
+  <title>Documentation Chinese first and English</title>
+  <rect width="178" height="28" rx="6" fill="#111827"/>
+  <rect x="58" width="120" height="28" rx="6" fill="#6D28D9"/>
+  <path d="M58 0h6v28h-6z" fill="#6D28D9"/>
+  <text x="29" y="19" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="12" text-anchor="middle">docs</text>
+  <text x="118" y="19" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle">中文优先 · EN</text>
+</svg>

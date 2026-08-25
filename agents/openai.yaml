@@ -1,0 +1,7 @@
+interface:
+  display_name: "GitHub README 标准化"
+  short_description: "构建中英双语、视觉完整且经过隐私审核的仓库首页"
+  icon_small: "./assets/brand-mark.svg"
+  icon_large: "./assets/brand-mark.svg"
+  brand_color: "#22C55E"
+  default_prompt: "使用 $github-readme-standardizer 审核并升级当前仓库的中英双语 README"
