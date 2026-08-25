@@ -205,7 +205,7 @@ Skill 按主要交付物选择一个主路由，混合项目可以增加少量�
 | 审核程序行为 | `python scripts/test_audit_readme.py` | 11 项测试通过 | 覆盖双语、链接、图片和敏感模式 |
 | 仓库内容 | `audit_readme.py --scan-repository` | 通过，0 个错误和 0 个提醒 | 扫描 2 份 README 和 22 个文本文件 |
 | 中文可读性 | `Test-HumanReadableChinese.ps1` | 通过，0 个硬错误和 10 个术语提醒 | 检查编号、禁用句式、术语和代码注释 |
-| GitHub 渲染 | 远端 README HTML 与资源核对 | 待推送后执行 | 检查实际表格、图片、链接与 Mermaid |
+| GitHub 渲染 | 远端 README HTML 与资源核对 | 通过 | GitHub HTML 保留全部表格、图片、链接与 Mermaid 标记 |
 
 </div>
 

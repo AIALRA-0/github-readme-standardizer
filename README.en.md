@@ -197,7 +197,7 @@ Table 8.1. Current validation scope
 | Auditor behavior | `python scripts/test_audit_readme.py` | 11 tests passed | Bilingual files, links, images, and sensitive patterns |
 | Repository content | `audit_readme.py --scan-repository` | Passed with 0 errors and 0 warnings | 2 README files and 22 text files |
 | Chinese readability | `Test-HumanReadableChinese.ps1` | Passed with 0 hard errors and 10 terminology reminders | Numbering, prohibited constructions, terminology, and code comments |
-| GitHub rendering | Remote README HTML and asset comparison | Pending post-push run | Actual tables, images, links, and Mermaid markup |
+| GitHub rendering | Remote README HTML and asset comparison | Passed | GitHub HTML preserves every table, image, link, and Mermaid marker |
 
 </div>
 
