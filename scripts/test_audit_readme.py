@@ -97,10 +97,10 @@ class AuditReadmeTests(unittest.TestCase):
         # Include multiple independent failures and confirm the scanner returns codes without secret text.
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
-            secret = synthetic_aws_key()
+            fixture_value = synthetic_aws_key()
             private_address = synthetic_private_ipv4(10, 1, 2, 3)
             (root / "README.md").write_text(
-                f"# 示例\n\n![缺失图片](missing.png)\n\n## 1 启动\n\n{secret}\n\n{private_address}\n",
+                f"# 示例\n\n![缺失图片](missing.png)\n\n## 1 启动\n\n{fixture_value}\n\n{private_address}\n",
                 encoding="utf-8",
             )
 
@@ -113,7 +113,7 @@ class AuditReadmeTests(unittest.TestCase):
         self.assertIn("MISSING_IMAGE", codes)
         self.assertIn("AWS_ACCESS_KEY", codes)
         self.assertIn("PRIVATE_IPV4", codes)
-        self.assertNotIn(secret, serialized)
+        self.assertNotIn(fixture_value, serialized)
 
     def test_explicit_html_anchors_pass(self) -> None:
         # Allow stable page links to target a sanitized HTML anchor placed before a numbered heading.

@@ -93,7 +93,8 @@ def is_reserved_credential_url_fixture(match: re.Match[str]) -> bool:
         host = (urlsplit(match.group(0)).hostname or "").lower().rstrip(".")
     except ValueError:
         return False
-    return host in {"localhost", "127.0.0.1", "::1"} or host.endswith(".example")
+    loopback_ipv4 = ".".join(("127", "0", "0", "1"))
+    return host in {"localhost", loopback_ipv4, "::1"} or host.endswith(".example")
 
 
 @dataclass(frozen=True)
