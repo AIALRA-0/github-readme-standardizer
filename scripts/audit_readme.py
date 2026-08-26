@@ -8,6 +8,7 @@ import hashlib
 import json
 import re
 import sys
+import xml.etree.ElementTree as ET
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
@@ -75,6 +76,10 @@ SENSITIVE_PATTERNS = {
         r"192\.168\.(?:\d{1,3}\.)\d{1,3}|"
         r"172\.(?:1[6-9]|2\d|3[01])\.(?:\d{1,3}\.)\d{1,3})(?![0-9])"
     ),
+    "WINDOWS_USER_PATH": re.compile(
+        r"(?<![A-Za-z0-9])(?:[A-Za-z]:[\\/](?:Users|Documents and Settings)[\\/][^\\/\s\"'<>]+)"
+    ),
+    "UNIX_USER_PATH": re.compile(r"(?<![A-Za-z0-9])/(?:home|Users)/[^/\s\"'<>]+"),
 }
 
 ALLOWLIST_FILENAME = ".readme-audit-allowlist.json"
@@ -549,6 +554,107 @@ def scan_sensitive_text(
     return scanned, allowlisted_matches
 
 
+def xml_local_name(name: str) -> str:
+    """Return an XML name without its namespace."""
+
+    return name.rsplit("}", 1)[-1].lower()
+
+
+def scan_svg_safety(root: Path, findings: list[Finding], files: Iterable[Path]) -> int:
+    """Validate SVG structure, active content, external references, and stable sizing."""
+
+    scanned = 0
+    blocked_elements = {"script", "foreignobject", "iframe", "object", "embed"}
+    for path in sorted(set(files)):
+        if path.suffix.lower() != ".svg":
+            continue
+        scanned += 1
+        text = read_text(path)
+        relative = path.relative_to(root)
+
+        if re.search(r"<!\s*(?:DOCTYPE|ENTITY)\b", text, flags=re.IGNORECASE):
+            add_finding(
+                findings,
+                "error",
+                "SVG_DOCUMENT_DECLARATION",
+                relative,
+                "SVG 包含文档类型或实体声明，无法作为可审查的静态资源发布",
+            )
+
+        try:
+            document = ET.fromstring(text)
+        except ET.ParseError:
+            add_finding(findings, "error", "MALFORMED_SVG", relative, "SVG 不是可解析的 XML 文档")
+            continue
+
+        if xml_local_name(document.tag) != "svg":
+            add_finding(findings, "error", "INVALID_SVG_ROOT", relative, "SVG 文件缺少 svg 根元素")
+            continue
+
+        title_present = False
+        active_content_found = False
+        external_reference_found = False
+        event_handler_found = False
+        for element in document.iter():
+            element_name = xml_local_name(element.tag)
+            if element_name == "title":
+                title_present = True
+            if element_name in blocked_elements:
+                active_content_found = True
+
+            for raw_name, raw_value in element.attrib.items():
+                attribute_name = xml_local_name(raw_name)
+                value = raw_value.strip()
+                if attribute_name.startswith("on"):
+                    event_handler_found = True
+                if attribute_name in {"href", "src"} and value and not value.startswith("#"):
+                    external_reference_found = True
+                if attribute_name in {"style", "fill", "filter", "mask", "clip-path"}:
+                    for match in re.finditer(r"url\(\s*['\"]?([^)'\"\s]+)", value, flags=re.IGNORECASE):
+                        reference = match.group(1)
+                        if not reference.startswith("#"):
+                            external_reference_found = True
+
+        if active_content_found:
+            add_finding(findings, "error", "SVG_ACTIVE_CONTENT", relative, "SVG 包含脚本或可嵌入活动内容")
+        if event_handler_found:
+            add_finding(findings, "error", "SVG_EVENT_HANDLER", relative, "SVG 包含事件处理器属性")
+        if external_reference_found:
+            add_finding(findings, "error", "SVG_EXTERNAL_REFERENCE", relative, "SVG 引用了仓库外部或数据地址资源")
+
+        has_accessible_name = title_present or any(
+            key in document.attrib for key in ("aria-label", "aria-labelledby")
+        )
+        if not has_accessible_name:
+            add_finding(findings, "warning", "SVG_ACCESSIBLE_NAME", relative, "SVG 缺少 title 或无障碍名称")
+
+        has_viewbox = "viewBox" in document.attrib or "viewbox" in document.attrib
+        has_dimensions = "width" in document.attrib and "height" in document.attrib
+        if not has_viewbox and not has_dimensions:
+            add_finding(findings, "warning", "SVG_UNSTABLE_SIZE", relative, "SVG 缺少 viewBox 或明确宽高，主题和窄屏缩放需要复核")
+
+    return scanned
+
+
+def png_chunk_types(data: bytes) -> set[bytes]:
+    """Return PNG chunk names without decoding embedded values."""
+
+    if not data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return set()
+    chunk_types: set[bytes] = set()
+    offset = 8
+    while offset + 12 <= len(data):
+        length = int.from_bytes(data[offset : offset + 4], "big")
+        chunk_type = data[offset + 4 : offset + 8]
+        if length > len(data) - offset - 12:
+            break
+        chunk_types.add(chunk_type)
+        offset += 12 + length
+        if chunk_type == b"IEND":
+            break
+    return chunk_types
+
+
 def scan_binary_image_metadata(root: Path, findings: list[Finding], files: Iterable[Path]) -> int:
     """Flag common embedded metadata containers in selected images."""
 
@@ -577,7 +683,12 @@ def scan_binary_image_metadata(root: Path, findings: list[Finding], files: Itera
             )
 
         markers = (b"Exif\x00\x00", b"Photoshop 3.0", b"XML:com.adobe.xmp", b"<x:xmpmeta")
-        if any(marker in data for marker in markers):
+        metadata_found = any(marker in data for marker in markers)
+        if suffix == ".png" and png_chunk_types(data) & {b"eXIf", b"iTXt", b"tEXt", b"zTXt"}:
+            metadata_found = True
+        if suffix == ".webp" and (b"EXIF" in data[12:] or b"XMP " in data[12:]):
+            metadata_found = True
+        if metadata_found:
             add_finding(
                 findings,
                 "warning",
@@ -623,6 +734,7 @@ def audit_repository(
     audit_scope = set(iter_repository_files(root)) if scan_repository else collect_readme_scope(root, readme_paths)
     allowlist = load_sensitive_allowlist(root, findings, audit_scope)
     text_files_scanned, allowlisted_matches = scan_sensitive_text(root, findings, audit_scope, allowlist)
+    vector_images_scanned = scan_svg_safety(root, findings, audit_scope)
     images_scanned = scan_binary_image_metadata(root, findings, audit_scope)
     errors = [asdict(item) for item in findings if item.level == "error"]
     warnings = [asdict(item) for item in findings if item.level == "warning"]
@@ -633,6 +745,7 @@ def audit_repository(
         "summary": {
             "readmes_checked": len(readme_reports),
             "text_files_scanned": text_files_scanned,
+            "vector_images_scanned": vector_images_scanned,
             "binary_images_scanned": images_scanned,
             "allowlist_entries": len(allowlist),
             "allowlisted_matches": allowlisted_matches,

@@ -12,7 +12,7 @@
   <img src="docs/assets/readme/badges/status.svg" alt="维护状态：持续维护">
   <a href="README.en.md"><img src="docs/assets/readme/badges/bilingual.svg" alt="文档语言：中文优先并提供英文版本"></a>
   <a href="SECURITY.md"><img src="docs/assets/readme/badges/privacy.svg" alt="隐私状态：发布前执行安全门禁"></a>
-  <img src="docs/assets/readme/badges/tests.svg" alt="自动测试：11 项通过">
+  <img src="docs/assets/readme/badges/tests.svg" alt="自动测试：16 项通过">
 </p>
 
 <p>
@@ -36,7 +36,7 @@
 
 </div>
 
-本文全部数值来自当前仓库文件、审核程序输出和 2026-08-25 的验证记录，HTML 与 SVG 尺寸值取自各文件的版式属性
+本文全部数值来自当前仓库文件和本次审核程序输出，HTML 与 SVG 尺寸值取自各文件的版式属性
 
 ## 1 项目价值
 
@@ -74,9 +74,13 @@ Codex 是能够在授权工作区中读取、修改和验证文件的编码智�
 |---|---|---|
 | 项目类型路由 | 应用、接口、命令行、基础设施、人工智能数据和技术内容采用不同首页结构 | [`references/profile-routing.md`](references/profile-routing.md) |
 | 双语事实同步 | `README.md` 使用简体中文，`README.en.md` 同步命令、状态、图表和限制 | [`references/content-protocol.md`](references/content-protocol.md) |
-| 视觉表达 | 首屏、徽章、图片、表格和 Mermaid 流程图服务于识别、理解或验证 | [`references/visual-system.md`](references/visual-system.md) |
-| 隐私门禁 | 真实身份、凭据、内部地址、本机路径和未脱敏图片会阻止发布 | [`references/security-evidence.md`](references/security-evidence.md) |
-| 确定性审核 | 审核程序检查双语文件、链接、图片、标题、敏感模式和资源元数据 | [`scripts/audit_readme.py`](scripts/audit_readme.py) |
+| 模块化组合 | 核心模块保持完整，界面、科学图、动态指标等条件模块按证据启用 | [`references/module-catalog.md`](references/module-catalog.md) |
+| 图片生产 | 区分运行证据、解释图和品牌视觉，规定生成输入、格式、主题和后备内容 | [`references/visual-production.md`](references/visual-production.md) |
+| 科学制图 | 约束图形选择、轴、单位、样本、不确定性、数据来源和复现入口 | [`references/scientific-visualization.md`](references/scientific-visualization.md) |
+| UI 与 UX 证据 | 使用合成界面覆盖完整任务，并检查亮色、暗色、窄屏与失败状态 | [`references/ui-ux-evidence.md`](references/ui-ux-evidence.md) |
+| 徽章与项目动态 | 可信状态保留在首屏，星标、下载和趋势只在页面末尾补充 | [`references/metrics-and-badges.md`](references/metrics-and-badges.md) |
+| 视觉隐私 | 同时检查像素、SVG 源码、文件元数据和远程视觉请求 | [`references/visual-privacy.md`](references/visual-privacy.md) |
+| 确定性审核 | 审核程序检查双语、链接、秘密、用户路径、SVG 安全和图片元数据 | [`scripts/audit_readme.py`](scripts/audit_readme.py) |
 | 渲染验收 | GitHub 页面需要正确保留图片、表格、链接、详情块和 Mermaid 标记 | [`references/validation.md`](references/validation.md) |
 
 </div>
@@ -94,8 +98,8 @@ flowchart TD
     B --> C[选择一个项目主路由]
     C --> D[编写中文 README]
     D --> E[同步英文 README]
-    E --> F[加入本地视觉资产与流程图]
-    F --> G[扫描身份、凭据、地址、路径与图片元数据]
+    E --> F[按证据组合图片、科学图、界面与项目动态]
+    F --> G[扫描身份、凭据、路径、像素、SVG 与元数据]
     G --> H{全部硬门禁通过}
     H -- 否 --> B
     H -- 是 --> I[检查亮色、暗色、窄屏与 GitHub 渲染]
@@ -160,16 +164,21 @@ Skill 按主要交付物选择一个主路由，混合项目可以增加少量�
 |---|---|---|
 | `SKILL.md` | 目标、授权边界、主流程和硬门禁 | 每次调用 Skill 时 |
 | `agents/openai.yaml` | Codex 界面名称、图标和默认提示 | Skill 被发现或调用时 |
-| `assets/` | 双语模板和 Skill 图标 | 新建 README 或展示 Skill 时 |
-| `references/` | 路由、内容、视觉、安全、研究和验证细则 | 当前任务命中对应条件时 |
-| `scripts/audit_readme.py` | 只读 README 与隐私审核程序 | 交付前 |
+| `assets/README.*.template.md` | 中文优先和英文镜像的完整骨架 | 新建或重构 README 时 |
+| `assets/visual-modules.*.md` | 图片、科学图、界面、稳定性、脱敏和项目动态的双语片段 | 启用条件视觉模块时 |
+| `references/module-catalog.md` | 模块顺序、启用依据和删除规则 | 组合 README 结构时 |
+| `references/visual-*.md` | 图片生产与视觉隐私细则 | 存在任何视觉资产时 |
+| `references/scientific-visualization.md` | 科学图和性能图的语义与复现要求 | 使用实验、评测或基准数据时 |
+| `references/ui-ux-evidence.md` | 界面证据和页面稳定性矩阵 | 项目具有用户界面时 |
+| `references/metrics-and-badges.md` | 徽章、星标、活动与趋势的选择门禁 | 展示动态状态或社区指标时 |
+| `scripts/audit_readme.py` | 只读 README、SVG、图片元数据与隐私审核程序 | 交付前 |
 | `scripts/test_audit_readme.py` | 审核程序的正向与反向测试 | 修改审核逻辑后 |
 
 </div>
 
 ## 7 隐私门禁
 
-仓库发布副本没有保存个人名称、个人邮箱、真实用户标识、密码、访问令牌、应用程序接口密钥、本机绝对路径、私有网络地址或实际部署地址
+仓库发布副本不得保存个人名称、个人邮箱、真实用户标识、密码、访问令牌、应用程序接口密钥、本机绝对路径、私有网络地址或实际部署地址
 
 测试程序需要验证秘密检测能力，因此测试程序会在运行时合成凭据形状和私网地址
 
@@ -186,14 +195,16 @@ Skill 按主要交付物选择一个主路由，混合项目可以增加少量�
 | 内部域名与部署地址 | `example.com` 或 `.invalid` 保留域名 | 停止发布并替换全部入口 |
 | 本机路径与生产目录 | `<repository-path>` 等语义占位值 | 停止发布并检查关联日志与图片 |
 | 截图和图片元数据 | 合成画面或重新生成的本地矢量图 | 停止发布并重新执行像素审核 |
+| SVG 源码 | 静态路径、形状、文字和仓库内片段引用 | 脚本、事件处理器、外部引用或实体声明会阻止发布 |
+| 远程徽章与统计 | 本地静态状态或仓库原生文字入口 | 无法解释请求、日志、缓存或失效行为时停止接入 |
 
 </div>
 
-完整报告流程位于 [`SECURITY.md`](SECURITY.md)，公开问题跟踪不接收秘密值
+完整报告流程位于 [`SECURITY.md`](SECURITY.md)，视觉审核细则位于 [`references/visual-privacy.md`](references/visual-privacy.md)，公开问题跟踪不接收秘密值
 
 ## 8 验证状态
 
-以下结果来自 2026-08-25 对当前发布副本执行的本地检查，日期表示本次验证时间，后续修改需要重新运行全部门禁
+以下结果来自 2026-08-26 对当前候选版本执行的检查，后续修改需要重新运行全部门禁
 
 <div align="center">
 
@@ -202,17 +213,17 @@ Skill 按主要交付物选择一个主路由，混合项目可以增加少量�
 | 检查对象 | 验证方法 | 当前结果 | 证据边界 |
 |---|---|---|---|
 | Skill 结构与元数据 | Skill Creator `quick_validate.py` | 通过 | 检查命名、前置元数据和脚手架占位 |
-| 审核程序行为 | `python scripts/test_audit_readme.py` | 11 项测试通过 | 覆盖双语、链接、图片和敏感模式 |
-| 仓库内容 | `audit_readme.py --scan-repository` | 通过，0 个错误和 0 个提醒 | 扫描 2 份 README 和 22 个文本文件 |
+| 审核程序行为 | `python scripts/test_audit_readme.py` | 16 项测试通过 | 覆盖双语、链接、秘密、用户路径、SVG 和图片元数据 |
+| 仓库内容 | `audit_readme.py --scan-repository` | 通过，0 个错误和 0 个提醒 | 2 份 README、30 个文本文件、6 个 SVG 和 0 个位图 |
 | 中文可读性 | `Test-HumanReadableChinese.ps1` | 通过，0 个硬错误和 10 个术语提醒 | 检查编号、禁用句式、术语和代码注释 |
-| GitHub 渲染 | 远端 README HTML 与资源核对 | 通过 | GitHub HTML 保留全部表格、图片、链接与 Mermaid 标记 |
+| GitHub 渲染 | GitHub Markdown HTML 与 Playwright 浏览器核对 | 通过 | 7 个表格、6 张本地图、11 个主章节和 1 个 Mermaid；亮色、暗色和窄屏均无页面溢出 |
 
 </div>
 
 ## 9 限制
 
 - 自动审核无法判断营销声明是否合理，维护者仍需核对代码、测试和发布记录
-- 自动审核无法仅凭文件内容确认截图中所有文字，正式发布仍需视觉检查
+- 自动审核无法仅凭文件内容确认截图中所有文字或科学结论是否成立，正式发布仍需像素检查和领域复核
 - Skill 不会自动获得提交、推送、发布或修改仓库设置的权限，远端写入需要用户明确授权
 - 当前私有分发没有附带开源许可证，仓库访问权限不等同于再分发授权
 
@@ -222,3 +233,19 @@ Skill 按主要交付物选择一个主路由，混合项目可以增加少量�
 - 安全问题按照 [`SECURITY.md`](SECURITY.md) 使用私密渠道报告
 - 模板研究和采用边界记录在 [`references/research-basis.md`](references/research-basis.md)
 - Skill 修改后需要同步中文与英文 README，并重新运行测试、隐私扫描和 GitHub 渲染验收
+
+## 11 项目动态
+
+项目动态位于页面末尾，只补充维护状态，不能代替功能、性能、质量或安全证据
+
+<div align="center">
+
+表 11.1　当前项目动态
+
+| 指标 | 当前状态 | 证据来源 | 外部服务 |
+|---|---|---|---|
+| 发布方式 | 默认分支持续更新 | 当前 Git 提交与验证记录 | 不需要 |
+| 自动审核 | 16 项行为测试 | [`scripts/test_audit_readme.py`](scripts/test_audit_readme.py) | 不需要 |
+| 星标与访问趋势 | 未启用 | 私有仓库不把访问数据发送给统计图片服务 | 无 |
+
+</div>

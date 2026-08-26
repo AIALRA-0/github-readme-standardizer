@@ -113,6 +113,44 @@ Figure 5.1. {{PROJECT_NAME}} core runtime relationship
 
 </div>
 
+### 5.1 Interface evidence (conditional)
+
+Keep this module only when the repository has a real user interface and screenshots can be regenerated with synthetic data
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/assets/readme/ui/{{START_SCREEN_FILE}}" alt="{{START_STATE_PRIMARY_ACTION_AND_OBSERVABLE_TARGET}}" width="100%"></td>
+    <td width="50%"><img src="docs/assets/readme/ui/{{RESULT_SCREEN_FILE}}" alt="{{RESULT_STATE_FEEDBACK_AND_NEXT_STEP}}" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center">Figure 5.2. {{FACTUAL_START_STATE_CAPTION}}</td>
+    <td align="center">Figure 5.3. {{FACTUAL_RESULT_STATE_CAPTION}}</td>
+  </tr>
+</table>
+
+### 5.2 Scientific result (conditional)
+
+Keep this module only when the data, statistical definition, and reproduction entry point can be published
+
+<div align="center">
+
+![{{METRIC_COMPARISON_AND_MAIN_CONCLUSION}}](docs/assets/readme/plots/{{FIGURE_FILE}})
+
+Figure 5.4. x-axis: {{NAME_AND_UNIT}}; y-axis: {{NAME_AND_UNIT}}; sample size: {{COUNT}}; error: {{DEFINITION}}; updated {{DATE}}
+
+</div>
+
+Data: [`{{DATA_FILE}}`]({{DATA_RELATIVE_PATH}}) · Reproduce: `{{REPRODUCTION_COMMAND}}` · Limitation: {{CONCLUSION_NOT_SUPPORTED_BY_THE_FIGURE}}
+
+### 5.3 Visual stability (keep when visuals exist)
+
+| Scenario | Validation target | Current result | Evidence boundary |
+|---|---|---|---|
+| GitHub light | {{TARGET}} | {{RESULT}} | {{SCOPE}} |
+| GitHub dark | {{TARGET}} | {{RESULT}} | {{SCOPE}} |
+| Narrow viewport | {{TARGET}} | {{RESULT}} | {{SCOPE}} |
+| Image failure | Alt text, caption, and body | {{RESULT}} | {{SCOPE}} |
+
 ## 6 Validation status
 
 The following results come from {{CHECK_COMMAND_CI_RECORD_OR_RELEASE_EVIDENCE}}
@@ -133,6 +171,7 @@ Table 6.1. {{PROJECT_NAME}} validation scope
 - {{DATA_SAVED_BY_THE_PROJECT_AND_STORAGE_LOCATION}}
 - {{EXTERNAL_SERVICE_ENABLEMENT_AND_LEAST_PRIVILEGE}}
 - {{SANITIZATION_RULES_FOR_LOGS_SCREENSHOTS_AND_EXPORTS}}
+- {{CHECK_RESULT_FOR_PIXELS_SVG_SOURCE_FILE_METADATA_AND_REMOTE_VISUAL_REQUESTS}}
 - Report vulnerabilities through the private channel in [SECURITY.md](SECURITY.md)
 
 ## 8 Project status
@@ -154,3 +193,13 @@ Supported scope: {{VERSIONS_PLATFORMS_AND_CAPABILITIES_BACKED_BY_EVIDENCE}}
 - Security reports: [SECURITY.md](SECURITY.md)
 - Contribution workflow: [CONTRIBUTING.md](CONTRIBUTING.md)
 - License terms: [LICENSE](LICENSE)
+
+## 11 Project pulse (conditional and always last)
+
+Project pulse supplements current maintenance and community state. It cannot replace functional, performance, quality, or security evidence
+
+| Metric | Current status | Source and update time | Fallback |
+|---|---|---|---|
+| Current release | {{STATUS}} | {{SOURCE_AND_DATE}} | Releases page |
+| Build | {{STATUS}} | {{SOURCE_AND_DATE}} | Validation guide |
+| Community trend | {{STATUS_OR_REMOVE_THIS_ROW}} | {{PROVIDER_QUERY_SCOPE_AND_DATE}} | Native repository page |

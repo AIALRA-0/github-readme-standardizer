@@ -68,6 +68,12 @@ def synthetic_credential_url(host_label: str, top_level_domain: str) -> str:
     return "".join(("https://", user_info, "@", host, "/path"))
 
 
+def synthetic_windows_user_path() -> str:
+    """Build a user-directory path without storing a host-specific path literal."""
+
+    return "".join(("C", ":", "\\", "Users", "\\", "synthetic-user", "\\", "project"))
+
+
 class AuditReadmeTests(unittest.TestCase):
     """Verify observable pass and fail behavior."""
 
@@ -319,6 +325,96 @@ class AuditReadmeTests(unittest.TestCase):
 
         self.assertEqual("FAIL", result["status"])
         self.assertIn("ALLOWLIST_COUNT_MISMATCH", {item["code"] for item in result["errors"]})
+
+    def test_safe_svg_has_stable_size_and_accessible_name(self) -> None:
+        # Accept a static local SVG with a scalable canvas, accessible title, and local paint reference.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            (root / "docs" / "hero.svg").write_text(
+                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50">'
+                '<title>Validated workflow</title><defs><linearGradient id="g"/></defs>'
+                '<rect width="100" height="50" fill="url(#g)"/></svg>',
+                encoding="utf-8",
+            )
+            (root / "README.md").write_text(GOOD_ZH, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN, encoding="utf-8")
+
+            result = audit_repository(root)
+
+        self.assertEqual("PASS", result["status"])
+        self.assertEqual(1, result["summary"]["vector_images_scanned"])
+        self.assertNotIn("SVG_UNSTABLE_SIZE", {item["code"] for item in result["warnings"]})
+
+    def test_svg_active_content_and_external_reference_fail(self) -> None:
+        # Block scripts, event handlers, and remote image loads inside a referenced vector asset.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            external = "".join(("https", "://", "assets", ".example", "/pixel.png"))
+            (root / "docs" / "hero.svg").write_text(
+                f'<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" onload="run()">'
+                f'<title>Unsafe fixture</title><script>run()</script><image href="{external}"/></svg>',
+                encoding="utf-8",
+            )
+            (root / "README.md").write_text(GOOD_ZH, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN, encoding="utf-8")
+
+            result = audit_repository(root)
+
+        codes = {item["code"] for item in result["errors"]}
+        self.assertEqual("FAIL", result["status"])
+        self.assertIn("SVG_ACTIVE_CONTENT", codes)
+        self.assertIn("SVG_EVENT_HANDLER", codes)
+        self.assertIn("SVG_EXTERNAL_REFERENCE", codes)
+
+    def test_malformed_svg_fails(self) -> None:
+        # Treat a truncated vector as a hard error because browsers may render it inconsistently.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            (root / "docs" / "hero.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg"><title>Broken', encoding="utf-8")
+            (root / "README.md").write_text(GOOD_ZH, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN, encoding="utf-8")
+
+            result = audit_repository(root)
+
+        self.assertEqual("FAIL", result["status"])
+        self.assertIn("MALFORMED_SVG", {item["code"] for item in result["errors"]})
+
+    def test_png_text_metadata_warns(self) -> None:
+        # Detect PNG textual chunks that may retain author, software, prompt, or source-path details.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            signature = b"\x89PNG\r\n\x1a\n"
+            text_chunk = (0).to_bytes(4, "big") + b"tEXt" + b"\x00\x00\x00\x00"
+            end_chunk = (0).to_bytes(4, "big") + b"IEND" + b"\x00\x00\x00\x00"
+            (root / "docs" / "hero.png").write_bytes(signature + text_chunk + end_chunk)
+            (root / "README.md").write_text(GOOD_ZH.replace("hero.svg", "hero.png"), encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN.replace("hero.svg", "hero.png"), encoding="utf-8")
+
+            result = audit_repository(root)
+
+        self.assertEqual("PASS", result["status"])
+        self.assertIn("IMAGE_METADATA", {item["code"] for item in result["warnings"]})
+
+    def test_local_user_directory_path_fails_without_echoing_value(self) -> None:
+        # Detect host-specific user directories and keep the matched value out of the result.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
+            local_path = synthetic_windows_user_path()
+            (root / "README.md").write_text(GOOD_ZH + "\n" + local_path, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN, encoding="utf-8")
+
+            result = audit_repository(root)
+            serialized = str(result)
+
+        self.assertEqual("FAIL", result["status"])
+        self.assertIn("WINDOWS_USER_PATH", {item["code"] for item in result["errors"]})
+        self.assertNotIn(local_path, serialized)
 
 
 if __name__ == "__main__":

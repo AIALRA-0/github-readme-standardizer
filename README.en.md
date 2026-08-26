@@ -12,7 +12,7 @@
   <img src="docs/assets/readme/badges/status.svg" alt="Maintenance status: maintained">
   <a href="README.md"><img src="docs/assets/readme/badges/bilingual.svg" alt="Documentation: Chinese first with an English version"></a>
   <a href="SECURITY.md"><img src="docs/assets/readme/badges/privacy.svg" alt="Privacy status: publication safety gate"></a>
-  <img src="docs/assets/readme/badges/tests.svg" alt="Automated tests: 11 passing">
+  <img src="docs/assets/readme/badges/tests.svg" alt="Automated tests: 16 passing">
 </p>
 
 <p>
@@ -36,7 +36,7 @@ Figure 1.1. Evidence-backed publication flow
 
 </div>
 
-All numerical values in this document come from repository files, auditor output, or the 2026-08-25 validation record. HTML and SVG dimensions come from the layout attributes in their respective files
+All numerical values in this document come from repository files and the current auditor output. HTML and SVG dimensions come from layout attributes in their respective files
 
 ## 1 Project value
 
@@ -68,9 +68,13 @@ Table 2.1. Core capabilities and observable results
 |---|---|---|
 | Project-profile routing | Applications, APIs, command-line tools, infrastructure, AI/data, and technical content receive different landing-page structures | [`references/profile-routing.md`](references/profile-routing.md) |
 | Bilingual fact synchronization | `README.md` uses Simplified Chinese while `README.en.md` mirrors commands, status, diagrams, and limitations | [`references/content-protocol.md`](references/content-protocol.md) |
-| Visual communication | The hero, badges, images, tables, and Mermaid diagrams support identification, understanding, or validation | [`references/visual-system.md`](references/visual-system.md) |
-| Privacy gate | Real identities, credentials, internal addresses, local paths, and unsanitized images block publication | [`references/security-evidence.md`](references/security-evidence.md) |
-| Deterministic audit | The auditor checks bilingual files, links, images, headings, sensitive patterns, and asset metadata | [`scripts/audit_readme.py`](scripts/audit_readme.py) |
+| Modular composition | Core modules remain complete while interface, scientific, and dynamic modules are enabled only by evidence | [`references/module-catalog.md`](references/module-catalog.md) |
+| Image production | Runtime evidence, explanatory graphics, and brand visuals receive separate generation, format, theme, and fallback rules | [`references/visual-production.md`](references/visual-production.md) |
+| Scientific visualization | Figure choice, axes, units, samples, uncertainty, data provenance, and reproduction entry points are specified | [`references/scientific-visualization.md`](references/scientific-visualization.md) |
+| UI and UX evidence | Synthetic interfaces cover a complete task and are checked in light, dark, narrow, and failure states | [`references/ui-ux-evidence.md`](references/ui-ux-evidence.md) |
+| Badges and project pulse | Trust status stays above the fold; stars, downloads, and trends appear only at the end | [`references/metrics-and-badges.md`](references/metrics-and-badges.md) |
+| Visual privacy | Pixels, SVG source, file metadata, and remote visual requests are reviewed together | [`references/visual-privacy.md`](references/visual-privacy.md) |
+| Deterministic audit | The auditor checks bilingual structure, links, secrets, user paths, SVG safety, and image metadata | [`scripts/audit_readme.py`](scripts/audit_readme.py) |
 | Rendered validation | The GitHub page must preserve images, tables, links, details blocks, and Mermaid markup | [`references/validation.md`](references/validation.md) |
 
 </div>
@@ -88,8 +92,8 @@ flowchart TD
     B --> C[Select one primary project profile]
     C --> D[Write the Chinese README]
     D --> E[Synchronize the English README]
-    E --> F[Add local visuals and a process diagram]
-    F --> G[Scan identities, credentials, addresses, paths, and image metadata]
+    E --> F[Compose images, scientific figures, interfaces, and project pulse from evidence]
+    F --> G[Scan identities, credentials, paths, pixels, SVG source, and metadata]
     G --> H{All hard gates pass}
     H -- No --> B
     H -- Yes --> I[Inspect light, dark, narrow, and GitHub rendering]
@@ -154,16 +158,21 @@ Table 6.1. Skill file responsibilities
 |---|---|---|
 | `SKILL.md` | Goals, authorization boundaries, primary flow, and hard gates | Every skill invocation |
 | `agents/openai.yaml` | Codex display name, icon, and default prompt | Skill discovery or invocation |
-| `assets/` | Bilingual templates and the skill icon | README creation or skill display |
-| `references/` | Routing, content, visual, security, research, and validation details | When the current task meets the corresponding condition |
-| `scripts/audit_readme.py` | Read-only README and privacy auditor | Before delivery |
+| `assets/README.*.template.md` | Complete Chinese-first and English-mirror skeletons | Creating or restructuring a README |
+| `assets/visual-modules.*.md` | Bilingual snippets for images, scientific figures, interfaces, stability, privacy, and project pulse | Enabling a conditional visual module |
+| `references/module-catalog.md` | Module order, evidence requirements, and deletion rules | Composing the README structure |
+| `references/visual-*.md` | Image production and visual privacy details | Any visual asset is in scope |
+| `references/scientific-visualization.md` | Semantics and reproducibility for scientific and performance figures | Publishing experiments, evaluations, or benchmarks |
+| `references/ui-ux-evidence.md` | Interface evidence and page-stability matrix | The project has a user interface |
+| `references/metrics-and-badges.md` | Selection gate for badges, stars, activity, and trends | Showing dynamic status or community metrics |
+| `scripts/audit_readme.py` | Read-only README, SVG, image metadata, and privacy auditor | Before delivery |
 | `scripts/test_audit_readme.py` | Positive and negative tests for the auditor | After audit-logic changes |
 
 </div>
 
 ## 7 Privacy and publication boundaries
 
-The publication copy contains no personal name, personal email, real user identifier, password, access token, API key, local absolute path, private network address, or live deployment endpoint
+The publication copy must not contain a personal name, personal email, real user identifier, password, access token, API key, local absolute path, private network address, or live deployment endpoint
 
 The test suite must exercise secret detection. Credential shapes and private addresses are therefore assembled at runtime from separate non-sensitive fragments, so complete fixture values do not enter Git history as source literals
 
@@ -178,14 +187,16 @@ Table 7.1. Publication blockers
 | Internal domains and deployment endpoints | Reserved `example.com` or `.invalid` names | Stop publication and replace every endpoint |
 | Local and production paths | Semantic placeholders such as `<repository-path>` | Stop publication and inspect related logs and images |
 | Screenshot pixels and image metadata | Synthetic screens or regenerated local vector assets | Stop publication and repeat the visual review |
+| SVG source | Static paths, shapes, text, and repository-local fragment references | Scripts, event handlers, external references, or entity declarations block publication |
+| Remote badges and statistics | Local static status or a native repository text entry point | Stop integration when requests, logs, caching, or failure behavior cannot be explained |
 
 </div>
 
-The complete reporting process is in [`SECURITY.md`](SECURITY.md). Public issues must never contain secret values
+The complete reporting process is in [`SECURITY.md`](SECURITY.md), and the visual review is in [`references/visual-privacy.md`](references/visual-privacy.md). Public issues must never contain secret values
 
 ## 8 Validation status
 
-The results below come from local checks of this publication copy on 2026-08-25. The date identifies this validation run, and every later modification requires the full gate sequence again
+The following results come from checks run against the current candidate on 2026-08-26. Every later modification requires the complete gate sequence again
 
 <div align="center">
 
@@ -194,17 +205,17 @@ Table 8.1. Current validation scope
 | Target | Method | Current result | Evidence boundary |
 |---|---|---|---|
 | Skill structure and metadata | Skill Creator `quick_validate.py` | Passed | Naming, frontmatter, and unfinished scaffold placeholders |
-| Auditor behavior | `python scripts/test_audit_readme.py` | 11 tests passed | Bilingual files, links, images, and sensitive patterns |
-| Repository content | `audit_readme.py --scan-repository` | Passed with 0 errors and 0 warnings | 2 README files and 22 text files |
+| Auditor behavior | `python scripts/test_audit_readme.py` | 16 tests passed | Bilingual structure, links, secrets, user paths, SVG, and image metadata |
+| Repository content | `audit_readme.py --scan-repository` | Passed with 0 errors and 0 warnings | 2 READMEs, 30 text files, 6 SVG files, and 0 raster images |
 | Chinese readability | `Test-HumanReadableChinese.ps1` | Passed with 0 hard errors and 10 terminology reminders | Numbering, prohibited constructions, terminology, and code comments |
-| GitHub rendering | Remote README HTML and asset comparison | Passed | GitHub HTML preserves every table, image, link, and Mermaid marker |
+| GitHub rendering | GitHub Markdown HTML and Playwright browser review | Passed | 7 tables, 6 local images, 11 primary sections, and 1 Mermaid block; no page overflow in light, dark, or narrow views |
 
 </div>
 
 ## 9 Limitations
 
 - Automated checks cannot decide whether a marketing claim is reasonable, so maintainers must still review code, tests, and release records
-- Automated checks cannot confirm every word in a screenshot from file structure alone, so formal publication still requires visual inspection
+- Automated checks cannot confirm every word in a screenshot or establish a scientific conclusion from file structure alone, so formal publication still requires pixel and domain review
 - The skill does not grant itself permission to commit, push, publish, or change repository settings; remote writes require explicit user authorization
 - This private distribution does not include an open-source license, and repository access does not grant redistribution rights
 
@@ -214,3 +225,19 @@ Table 8.1. Current validation scope
 - Report security issues through a private channel described in [`SECURITY.md`](SECURITY.md)
 - Review template research and adoption boundaries in [`references/research-basis.md`](references/research-basis.md)
 - After changing the skill, synchronize both README files and repeat tests, privacy scanning, and rendered GitHub validation
+
+## 11 Project pulse
+
+Project pulse appears at the end and supplements maintenance state. It cannot replace functional, performance, quality, or security evidence
+
+<div align="center">
+
+Table 11.1. Current project pulse
+
+| Metric | Current status | Evidence | External service |
+|---|---|---|---|
+| Publication model | Continuous updates on the default branch | Current Git commit and validation record | Not required |
+| Automated audit | 16 behavioral tests | [`scripts/test_audit_readme.py`](scripts/test_audit_readme.py) | Not required |
+| Star and visitor trends | Disabled | A private repository does not send visitor data to statistical image services | None |
+
+</div>
