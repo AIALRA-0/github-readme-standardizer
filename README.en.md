@@ -217,7 +217,7 @@ Table 8.1. Current validation scope
 - Automated checks cannot decide whether a marketing claim is reasonable, so maintainers must still review code, tests, and release records
 - Automated checks cannot confirm every word in a screenshot or establish a scientific conclusion from file structure alone, so formal publication still requires pixel and domain review
 - The skill does not grant itself permission to commit, push, publish, or change repository settings; remote writes require explicit user authorization
-- This private distribution does not include an open-source license, and repository access does not grant redistribution rights
+- The repository is publicly visible but currently has no open-source license; public access does not grant permission to copy, modify, or redistribute the project
 
 ## 10 Contributing
 
@@ -238,6 +238,6 @@ Table 11.1. Current project pulse
 |---|---|---|---|
 | Publication model | Continuous updates on the default branch | Current Git commit and validation record | Not required |
 | Automated audit | 16 behavioral tests | [`scripts/test_audit_readme.py`](scripts/test_audit_readme.py) | Not required |
-| Star and visitor trends | Disabled | A private repository does not send visitor data to statistical image services | None |
+| Star and visitor trends | Disabled | The current version sends no visitor data to third-party statistical image services | None |
 
 </div>
