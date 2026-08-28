@@ -50,7 +50,7 @@ description: Audit, create, or upgrade GitHub repository READMEs with evidence-b
 
 - 第五步，优先复用仓库内真实视觉资产。生成图只承担解释或品牌角色，不伪装成运行证据。对截图像素、SVG 源码、图片元数据和外部请求执行脱敏审核
 
-- 第六步，运行 `scripts/audit_readme.py <仓库路径>`，检查双语结构、链接、秘密、用户目录路径、SVG 活动内容、外部引用和图片元数据，修复全部硬错误并人工复核提醒
+- 第六步，运行 `scripts/audit_readme.py <仓库路径> --strict-warnings`，检查双语结构、链接、秘密、用户目录路径、Mermaid 方向、装饰性编号、SVG 活动内容、外部引用和图片元数据，修复全部硬错误并人工复核提醒
 
 - 第七步，在亮色、暗色和窄屏环境渲染 README，检查图片、表格、代码、流程图、链接和页面级横向溢出
 
@@ -62,6 +62,8 @@ description: Audit, create, or upgrade GitHub repository READMEs with evidence-b
 - 首屏保留项目标志或名称、一级标题、价值短句、可信状态、稳定入口和第一视觉证据
 - 顶部只保留能够改变读者下一步的稳定入口，动态徽章和远程图片需要说明用途、隐私影响和维护责任
 - 星标、访问量、下载量、贡献热力和趋势图只放页面末尾，不能代替第一视觉证据、功能证据或质量结论
+- Mermaid 的 `flowchart` 和 `graph` 必须明确使用 `TD` 或 `TB`，横向方向和缺失方向返回硬错误
+- 标题使用 `1`、`1.1` 等十进制编号，步骤使用自然语言顺序，装饰性圆圈数字和数字 Emoji 返回硬错误
 - 代码、命令和配置示例必须有合法注释，并保持可复制执行
 - 性能、效率和质量声明需要测试条件、数据来源、复现方法和更新时间
 - 科学图需要标明轴、单位、样本量、不确定性、数据来源、处理方法和不能推出的结论
@@ -72,6 +74,7 @@ description: Audit, create, or upgrade GitHub repository READMEs with evidence-b
 - 多仓库项目需要说明仓库职责、官方维护范围和问题路由
 - 根 README 保持入口职责，完整接口、参数和长篇排障内容下沉到 `docs/`
 - 任一安全、事实、双语、链接或视觉硬门禁失败时停止交付并继续修复
+- 普通 GitHub 发布任务只审核 README，不在未获得 README 修改授权时重写项目内容
 
 ## 6 可复用资源
 

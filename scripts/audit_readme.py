@@ -84,6 +84,8 @@ SENSITIVE_PATTERNS = {
 
 ALLOWLIST_FILENAME = ".readme-audit-allowlist.json"
 ALLOWLISTABLE_CODES = {"PRIVATE_IPV4"}
+DECORATIVE_NUMBERING_PATTERN = re.compile(r"[\u2460-\u2473\u24f5-\u24fe]|[0-9#*]\ufe0f?\u20e3")
+MERMAID_BLOCK_PATTERN = re.compile(r"(?ms)^```mermaid\s*\n(.*?)^```\s*$", flags=re.IGNORECASE)
 
 
 def is_reserved_credential_url_fixture(match: re.Match[str]) -> bool:
@@ -403,6 +405,32 @@ def audit_readme_file(root: Path, readme: Path, findings: list[Finding]) -> dict
     valid_anchors = set(slugs) | explicit_html_anchors(text)
     links, images = extract_targets(text)
 
+    # Keep process order in vertical arrows and reject decorative numbering that competes with headings.
+    for match in DECORATIVE_NUMBERING_PATTERN.finditer(mask_fenced_code(text)):
+        add_finding(
+            findings,
+            "error",
+            "DECORATIVE_NUMBERING",
+            readme,
+            "README 使用装饰性圆圈数字或数字 Emoji，请改用十进制标题或中文步骤",
+            line_number(text, match.start()),
+        )
+    for block in MERMAID_BLOCK_PATTERN.finditer(text):
+        content = block.group(1)
+        declaration = re.search(r"(?mi)^\s*(?:flowchart|graph)(?:\s+([A-Za-z]+))?\s*$", content)
+        if declaration is None:
+            continue
+        direction = (declaration.group(1) or "").upper()
+        if direction not in {"TD", "TB"}:
+            add_finding(
+                findings,
+                "error",
+                "MERMAID_DIRECTION",
+                readme,
+                "Mermaid flowchart 或 graph 必须明确使用 TD 或 TB 竖向方向",
+                line_number(text, block.start(1) + declaration.start()),
+            )
+
     # Require a searchable project title in either Markdown or semantic HTML.
     has_h1 = 1 in levels or bool(re.search(r"<h1(?:\s|>)", text, flags=re.IGNORECASE))
     if not has_h1:
@@ -448,7 +476,7 @@ def audit_readme_file(root: Path, readme: Path, findings: list[Finding]) -> dict
     table_count = len(re.findall(r"(?m)^\|(?:\s*:?-+:?\s*\|)+\s*$", visible_text)) + len(
         re.findall(r"<table(?:\s|>)", visible_text, flags=re.IGNORECASE)
     )
-    mermaid_count = len(re.findall(r"```mermaid\s", text, flags=re.IGNORECASE))
+    mermaid_count = len(MERMAID_BLOCK_PATTERN.findall(text))
     if not images and table_count == 0 and mermaid_count == 0:
         add_finding(findings, "warning", "NO_VISUAL_EVIDENCE", readme, "README 缺少图片、表格或 Mermaid 关系图")
 
@@ -529,7 +557,7 @@ def scan_sensitive_text(
         if path.suffix.lower() == ".svg" and re.search(r"<metadata(?:\s|>)", text, flags=re.IGNORECASE):
             add_finding(
                 findings,
-                "warning",
+                "error",
                 "SVG_METADATA",
                 path.relative_to(root),
                 "SVG 包含 metadata 元素，需要确认没有作者、路径或设备信息",
@@ -692,7 +720,7 @@ def scan_binary_image_metadata(root: Path, findings: list[Finding], files: Itera
         if metadata_found:
             add_finding(
                 findings,
-                "warning",
+                "error",
                 "IMAGE_METADATA",
                 path.relative_to(root),
                 "图片包含常见元数据容器，需要执行项目专用元数据检查",
@@ -772,6 +800,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         action="store_true",
         help="Scan all repository text and image files instead of the README publication surface",
     )
+    parser.add_argument(
+        "--strict-warnings",
+        action="store_true",
+        help="Return a failure code when manual-review warnings remain",
+    )
     return parser.parse_args(argv)
 
 
@@ -785,7 +818,8 @@ def main(argv: list[str] | None = None) -> int:
 
     result = audit_repository(args.repository, args.zh, args.en, args.scan_repository)
     print(json.dumps(result, ensure_ascii=False, indent=2))
-    return 0 if result["status"] == "PASS" else 1
+    warning_count = int(result["summary"]["warning_count"])
+    return 0 if result["status"] == "PASS" and (not args.strict_warnings or warning_count == 0) else 1
 
 
 if __name__ == "__main__":

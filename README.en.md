@@ -12,7 +12,7 @@
   <img src="docs/assets/readme/badges/status.svg" alt="Maintenance status: maintained">
   <a href="README.md"><img src="docs/assets/readme/badges/bilingual.svg" alt="Documentation: Chinese first with an English version"></a>
   <a href="SECURITY.md"><img src="docs/assets/readme/badges/privacy.svg" alt="Privacy status: publication safety gate"></a>
-  <img src="docs/assets/readme/badges/tests.svg" alt="Automated tests: 16 passing">
+  <img src="docs/assets/readme/badges/tests.svg" alt="Automated tests: 18 passing">
 </p>
 
 <p>
@@ -74,7 +74,7 @@ Table 2.1. Core capabilities and observable results
 | UI and UX evidence | Synthetic interfaces cover a complete task and are checked in light, dark, narrow, and failure states | [`references/ui-ux-evidence.md`](references/ui-ux-evidence.md) |
 | Badges and project pulse | Trust status stays above the fold; stars, downloads, and trends appear only at the end | [`references/metrics-and-badges.md`](references/metrics-and-badges.md) |
 | Visual privacy | Pixels, SVG source, file metadata, and remote visual requests are reviewed together | [`references/visual-privacy.md`](references/visual-privacy.md) |
-| Deterministic audit | The auditor checks bilingual structure, links, secrets, user paths, SVG safety, and image metadata | [`scripts/audit_readme.py`](scripts/audit_readme.py) |
+| Deterministic audit | The auditor checks bilingual structure, links, secrets, user paths, numbering, Mermaid direction, SVG safety, and image metadata | [`scripts/audit_readme.py`](scripts/audit_readme.py) |
 | Rendered validation | The GitHub page must preserve images, tables, links, details blocks, and Mermaid markup | [`references/validation.md`](references/validation.md) |
 
 </div>
@@ -120,12 +120,12 @@ Prerequisites: a configured Codex skill directory and Python 3.10 or later. The 
 - Step 2, run a full audit against a target repository:
 
   ```powershell
-  python scripts/audit_readme.py "<repository-path>" --scan-repository # Replace the semantic placeholder and scan README files, source, fixtures, and visuals
+  python scripts/audit_readme.py "<repository-path>" --scan-repository --strict-warnings # Replace the semantic placeholder and scan README files, source, fixtures, and visuals; unresolved warnings block formal publication
   ```
 
 - Step 3, inspect the JSON result:
 
-  Items in `errors` block publication. Items in `warnings` require human review. The auditor never modifies the target repository
+  Items in `errors` block publication. Items in `warnings` require human review; formal publication uses `--strict-warnings`. The auditor never modifies the target repository
 
 Expected result: the auditor returns `PASS` or `FAIL` with specific issue codes, and it does not echo complete secret values that it detects
 
@@ -205,8 +205,8 @@ Table 8.1. Current validation scope
 | Target | Method | Current result | Evidence boundary |
 |---|---|---|---|
 | Skill structure and metadata | Skill Creator `quick_validate.py` | Passed | Naming, frontmatter, and unfinished scaffold placeholders |
-| Auditor behavior | `python scripts/test_audit_readme.py` | 16 tests passed | Bilingual structure, links, secrets, user paths, SVG, and image metadata |
-| Repository content | `audit_readme.py --scan-repository` | Passed with 0 errors and 0 warnings | 2 READMEs, 30 text files, 6 SVG files, and 0 raster images |
+| Auditor behavior | `python scripts/test_audit_readme.py` | 18 tests passed | Bilingual structure, links, secrets, user paths, numbering, Mermaid, SVG, and image metadata |
+| Repository content | `audit_readme.py --scan-repository` | Passed with 0 errors and 0 warnings | 2 READMEs, 32 text files, 6 SVG files, and 0 raster images |
 | Chinese readability | `Test-HumanReadableChinese.ps1` | Passed with 0 hard errors and 10 terminology reminders | Numbering, prohibited constructions, terminology, and code comments |
 | GitHub rendering | GitHub Markdown HTML and Playwright browser review | Passed | 7 tables, 6 local images, 11 primary sections, and 1 Mermaid block; no page overflow in light, dark, or narrow views |
 
@@ -237,7 +237,7 @@ Table 11.1. Current project pulse
 | Metric | Current status | Evidence | External service |
 |---|---|---|---|
 | Publication model | Continuous updates on the default branch | Current Git commit and validation record | Not required |
-| Automated audit | 16 behavioral tests | [`scripts/test_audit_readme.py`](scripts/test_audit_readme.py) | Not required |
+| Automated audit | 18 behavioral tests | [`scripts/test_audit_readme.py`](scripts/test_audit_readme.py) | Not required |
 | Star and visitor trends | Disabled | The current version sends no visitor data to third-party statistical image services | None |
 
 </div>

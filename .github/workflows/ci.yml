@@ -1,0 +1,35 @@
+name: verify
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: verify / tests
+    runs-on: ubuntu-latest
+    steps:
+      # Read the complete publication source without retaining write credentials
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Use the supported Python line for deterministic README checks
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      # Exercise positive and negative README audit behavior
+      - name: Run auditor tests
+        run: python -X utf8 scripts/test_audit_readme.py
+
+      # Treat unresolved warnings as a publication failure for the skill itself
+      - name: Audit repository content
+        run: python -X utf8 scripts/audit_readme.py . --scan-repository --strict-warnings

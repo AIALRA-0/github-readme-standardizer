@@ -93,6 +93,37 @@ class AuditReadmeTests(unittest.TestCase):
         self.assertNotIn(1, result["readmes"][0]["heading_levels"])
         self.assertEqual(1, result["readmes"][0]["tables"])
 
+    def test_mermaid_direction_and_decorative_numbering_are_hard_errors(self) -> None:
+        # Reject horizontal or implicit flowcharts and decorative numbering without blocking ordinary digits.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
+            invalid = "\n\n① 启动\n\n```mermaid\nflowchart LR\nA --> B\n```\n"
+            (root / "README.md").write_text(GOOD_ZH + invalid, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN + invalid, encoding="utf-8")
+
+            result = audit_repository(root)
+
+        codes = {item["code"] for item in result["errors"]}
+        self.assertEqual("FAIL", result["status"])
+        self.assertIn("MERMAID_DIRECTION", codes)
+        self.assertIn("DECORATIVE_NUMBERING", codes)
+
+    def test_vertical_mermaid_and_decimal_numbers_pass(self) -> None:
+        # Preserve ordinary versions and decimal headings while accepting both vertical direction aliases.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
+            diagram = "\n\nVersion 2.1\n\n```mermaid\ngraph TB\nA --> B\n```\n"
+            (root / "README.md").write_text(GOOD_ZH + diagram, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN + diagram, encoding="utf-8")
+
+            result = audit_repository(root)
+
+        self.assertEqual("PASS", result["status"])
+
     def test_sensitive_and_missing_content_fail(self) -> None:
         # Include multiple independent failures and confirm the scanner returns codes without secret text.
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -396,8 +427,8 @@ class AuditReadmeTests(unittest.TestCase):
 
             result = audit_repository(root)
 
-        self.assertEqual("PASS", result["status"])
-        self.assertIn("IMAGE_METADATA", {item["code"] for item in result["warnings"]})
+        self.assertEqual("FAIL", result["status"])
+        self.assertIn("IMAGE_METADATA", {item["code"] for item in result["errors"]})
 
     def test_local_user_directory_path_fails_without_echoing_value(self) -> None:
         # Detect host-specific user directories and keep the matched value out of the result.
