@@ -341,6 +341,35 @@ def explicit_html_anchors(text: str) -> set[str]:
     return anchors
 
 
+def h1_alignment(text: str) -> tuple[int, list[int]]:
+    """Count visible H1 titles and return line numbers for titles that are not centered."""
+
+    visible_text = mask_fenced_code(text)
+    markdown_h1 = list(re.finditer(r"(?m)^#\s+.+?\s*$", visible_text))
+    html_h1 = list(re.finditer(r"<h1\b([^>]*)>.*?</h1\s*>", visible_text, flags=re.IGNORECASE | re.DOTALL))
+    centered_ranges: list[tuple[int, int]] = []
+
+    # GitHub preserves the align attribute, while CSS-based centering can be stripped during rendering.
+    for container in re.finditer(
+        r"<(div|p)\b([^>]*)>.*?</\1\s*>",
+        visible_text,
+        flags=re.IGNORECASE | re.DOTALL,
+    ):
+        if re.search(r"\balign\s*=\s*(?:[\"']center[\"']|center)(?:\s|$)", container.group(2), flags=re.IGNORECASE):
+            centered_ranges.append(container.span())
+
+    uncentered_lines = [line_number(text, match.start()) for match in markdown_h1]
+    for match in html_h1:
+        directly_centered = bool(
+            re.search(r"\balign\s*=\s*(?:[\"']center[\"']|center)(?:\s|$)", match.group(1), flags=re.IGNORECASE)
+        )
+        wrapped_by_center = any(start <= match.start() and match.end() <= end for start, end in centered_ranges)
+        if not directly_centered and not wrapped_by_center:
+            uncentered_lines.append(line_number(text, match.start()))
+
+    return len(markdown_h1) + len(html_h1), uncentered_lines
+
+
 def extract_targets(text: str) -> tuple[list[tuple[str, str, int]], list[tuple[str, str, int]]]:
     """Extract links and images from Markdown and embedded HTML."""
 
@@ -431,10 +460,19 @@ def audit_readme_file(root: Path, readme: Path, findings: list[Finding]) -> dict
                 line_number(text, block.start(1) + declaration.start()),
             )
 
-    # Require a searchable project title in either Markdown or semantic HTML.
-    has_h1 = 1 in levels or bool(re.search(r"<h1(?:\s|>)", text, flags=re.IGNORECASE))
-    if not has_h1:
+    # Require every project title to use stable GitHub-compatible HTML centering.
+    h1_count, uncentered_h1_lines = h1_alignment(text)
+    if h1_count == 0:
         add_finding(findings, "error", "MISSING_H1", readme, "README 缺少可搜索的一级标题")
+    for h1_line in uncentered_h1_lines:
+        add_finding(
+            findings,
+            "error",
+            "H1_NOT_CENTERED",
+            readme,
+            "README 的一级大标题必须使用 align=\"center\" 或置于 align=\"center\" 的容器中",
+            h1_line,
+        )
 
     # Chinese remains the default primary language while allowing project-specific review.
     if readme.name.lower() == "readme.md" and not re.search(r"[\u3400-\u9fff]", text[:4000]):

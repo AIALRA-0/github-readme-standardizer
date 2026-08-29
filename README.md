@@ -12,7 +12,7 @@
   <img src="docs/assets/readme/badges/status.svg" alt="维护状态：持续维护">
   <a href="README.en.md"><img src="docs/assets/readme/badges/bilingual.svg" alt="文档语言：中文优先并提供英文版本"></a>
   <a href="SECURITY.md"><img src="docs/assets/readme/badges/privacy.svg" alt="隐私状态：发布前执行安全门禁"></a>
-  <img src="docs/assets/readme/badges/tests.svg" alt="自动测试：18 项通过">
+  <img src="docs/assets/readme/badges/tests.svg" alt="自动测试：19 项通过">
 </p>
 
 <p>
@@ -213,7 +213,7 @@ Skill 按主要交付物选择一个主路由，混合项目可以增加少量�
 | 检查对象 | 验证方法 | 当前结果 | 证据边界 |
 |---|---|---|---|
 | Skill 结构与元数据 | Skill Creator `quick_validate.py` | 通过 | 检查命名、前置元数据和脚手架占位 |
-| 审核程序行为 | `python scripts/test_audit_readme.py` | 18 项测试通过 | 覆盖双语、链接、秘密、用户路径、编号、Mermaid、SVG 和图片元数据 |
+| 审核程序行为 | `python scripts/test_audit_readme.py` | 19 项测试通过 | 覆盖双语、居中大标题、链接、秘密、用户路径、编号、Mermaid、SVG 和图片元数据 |
 | 仓库内容 | `audit_readme.py --scan-repository` | 通过，0 个错误和 0 个提醒 | 2 份 README、30 个文本文件、6 个 SVG 和 0 个位图 |
 | 中文可读性 | `Test-HumanReadableChinese.ps1` | 通过，0 个硬错误和 10 个术语提醒 | 检查编号、禁用句式、术语和代码注释 |
 | GitHub 渲染 | GitHub Markdown HTML 与 Playwright 浏览器核对 | 通过 | 7 个表格、6 张本地图、11 个主章节和 1 个 Mermaid；亮色、暗色和窄屏均无页面溢出 |
@@ -245,7 +245,7 @@ Skill 按主要交付物选择一个主路由，混合项目可以增加少量�
 | 指标 | 当前状态 | 证据来源 | 外部服务 |
 |---|---|---|---|
 | 发布方式 | 默认分支持续更新 | 当前 Git 提交与验证记录 | 不需要 |
-| 自动审核 | 18 项行为测试 | [`scripts/test_audit_readme.py`](scripts/test_audit_readme.py) | 不需要 |
+| 自动审核 | 19 项行为测试 | [`scripts/test_audit_readme.py`](scripts/test_audit_readme.py) | 不需要 |
 | 星标与访问趋势 | 未启用 | 当前版本不向第三方统计图片服务发送访问数据 | 无 |
 
 </div>
