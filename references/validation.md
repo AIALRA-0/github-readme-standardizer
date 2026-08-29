@@ -5,12 +5,12 @@
 在技能目录运行以下命令：
 
 ```powershell
-python scripts/audit_readme.py "<repository-path>" # 使用仓库路径占位值审核双语 README、链接、资源和已知敏感模式
+python scripts/audit_readme.py "<repository-path>" --strict-warnings # 使用仓库路径占位值审核双语 README、链接、资源、编号、Mermaid 和已知敏感模式
 ```
 
-脚本输出 JSON 结构化结果，`errors` 中的每个问题都属于交付阻断项，`warnings` 需要人工确认
+脚本输出 JSON 结构化结果，`errors` 中的每个问题都属于交付阻断项，`warnings` 需要人工确认；正式发布使用 `--strict-warnings`，未确认提醒同样阻止自动合并
 
-确定性检查覆盖中英双语结构、本地链接、替代文本、已知秘密形状、私有网络地址、用户目录路径、SVG XML 结构、活动内容、事件处理器、外部引用、稳定尺寸和常见位图元数据容器
+确定性检查覆盖中英双语结构、本地链接、替代文本、十进制编号、装饰性编号、Mermaid 竖向方向、已知秘密形状、私有网络地址、用户目录路径、SVG XML 结构、活动内容、事件处理器、外部引用、稳定尺寸和常见位图元数据容器
 
 默认扫描范围包括中英文 README 及其引用的本地文档和视觉资产
 
