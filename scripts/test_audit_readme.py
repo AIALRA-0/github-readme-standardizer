@@ -93,6 +93,27 @@ class AuditReadmeTests(unittest.TestCase):
         self.assertNotIn(1, result["readmes"][0]["heading_levels"])
         self.assertEqual(1, result["readmes"][0]["tables"])
 
+    def test_every_h1_must_be_centered(self) -> None:
+        # Reject Markdown H1 and uncentered HTML H1 while accepting direct or container alignment.
+        cases = (
+            ("# 示例项目", "# Example Project", False),
+            ("<h1>示例项目</h1>", "<h1>Example Project</h1>", False),
+            ('<h1 align="center">示例项目</h1>', '<h1 align="center">Example Project</h1>', True),
+            ('<div align="center"><h1>示例项目</h1></div>', '<div align="center"><h1>Example Project</h1></div>', True),
+        )
+        for zh_title, en_title, should_pass in cases:
+            with self.subTest(zh_title=zh_title, should_pass=should_pass), tempfile.TemporaryDirectory() as temp_dir:
+                root = Path(temp_dir)
+                (root / "docs").mkdir()
+                (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
+                (root / "README.md").write_text(GOOD_ZH.replace('<div align="center"><h1>示例项目</h1></div>', zh_title), encoding="utf-8")
+                (root / "README.en.md").write_text(GOOD_EN.replace('<div align="center"><h1>Example Project</h1></div>', en_title), encoding="utf-8")
+
+                result = audit_repository(root)
+
+            codes = {item["code"] for item in result["errors"]}
+            self.assertEqual(should_pass, "H1_NOT_CENTERED" not in codes)
+
     def test_mermaid_direction_and_decorative_numbering_are_hard_errors(self) -> None:
         # Reject horizontal or implicit flowcharts and decorative numbering without blocking ordinary digits.
         with tempfile.TemporaryDirectory() as temp_dir:

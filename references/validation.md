@@ -10,6 +10,8 @@ python scripts/audit_readme.py "<repository-path>" --strict-warnings # 使用仓
 
 脚本输出 JSON 结构化结果，`errors` 中的每个问题都属于交付阻断项，`warnings` 需要人工确认；正式发布使用 `--strict-warnings`，未确认提醒同样阻止自动合并
 
+每份 README 的所有一级大标题都必须使用 GitHub 能够稳定保留的 HTML 居中方式；Markdown `# 标题` 或未居中的 `<h1>` 返回硬错误 `H1_NOT_CENTERED`
+
 确定性检查覆盖中英双语结构、本地链接、替代文本、十进制编号、装饰性编号、Mermaid 竖向方向、已知秘密形状、私有网络地址、用户目录路径、SVG XML 结构、活动内容、事件处理器、外部引用、稳定尺寸和常见位图元数据容器
 
 默认扫描范围包括中英文 README 及其引用的本地文档和视觉资产

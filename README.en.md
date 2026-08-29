@@ -12,7 +12,7 @@
   <img src="docs/assets/readme/badges/status.svg" alt="Maintenance status: maintained">
   <a href="README.md"><img src="docs/assets/readme/badges/bilingual.svg" alt="Documentation: Chinese first with an English version"></a>
   <a href="SECURITY.md"><img src="docs/assets/readme/badges/privacy.svg" alt="Privacy status: publication safety gate"></a>
-  <img src="docs/assets/readme/badges/tests.svg" alt="Automated tests: 18 passing">
+  <img src="docs/assets/readme/badges/tests.svg" alt="Automated tests: 19 passing">
 </p>
 
 <p>
@@ -205,7 +205,7 @@ Table 8.1. Current validation scope
 | Target | Method | Current result | Evidence boundary |
 |---|---|---|---|
 | Skill structure and metadata | Skill Creator `quick_validate.py` | Passed | Naming, frontmatter, and unfinished scaffold placeholders |
-| Auditor behavior | `python scripts/test_audit_readme.py` | 18 tests passed | Bilingual structure, links, secrets, user paths, numbering, Mermaid, SVG, and image metadata |
+| Auditor behavior | `python scripts/test_audit_readme.py` | 19 tests passed | Bilingual structure, centered H1 titles, links, secrets, user paths, numbering, Mermaid, SVG, and image metadata |
 | Repository content | `audit_readme.py --scan-repository` | Passed with 0 errors and 0 warnings | 2 READMEs, 32 text files, 6 SVG files, and 0 raster images |
 | Chinese readability | `Test-HumanReadableChinese.ps1` | Passed with 0 hard errors and 10 terminology reminders | Numbering, prohibited constructions, terminology, and code comments |
 | GitHub rendering | GitHub Markdown HTML and Playwright browser review | Passed | 7 tables, 6 local images, 11 primary sections, and 1 Mermaid block; no page overflow in light, dark, or narrow views |
@@ -237,7 +237,7 @@ Table 11.1. Current project pulse
 | Metric | Current status | Evidence | External service |
 |---|---|---|---|
 | Publication model | Continuous updates on the default branch | Current Git commit and validation record | Not required |
-| Automated audit | 18 behavioral tests | [`scripts/test_audit_readme.py`](scripts/test_audit_readme.py) | Not required |
+| Automated audit | 19 behavioral tests | [`scripts/test_audit_readme.py`](scripts/test_audit_readme.py) | Not required |
 | Star and visitor trends | Disabled | The current version sends no visitor data to third-party statistical image services | None |
 
 </div>

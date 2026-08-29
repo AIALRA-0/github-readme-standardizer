@@ -50,7 +50,7 @@ description: Audit, create, or upgrade GitHub repository READMEs with evidence-b
 
 - 第五步，优先复用仓库内真实视觉资产。生成图只承担解释或品牌角色，不伪装成运行证据。对截图像素、SVG 源码、图片元数据和外部请求执行脱敏审核
 
-- 第六步，运行 `scripts/audit_readme.py <仓库路径> --strict-warnings`，检查双语结构、链接、秘密、用户目录路径、Mermaid 方向、装饰性编号、SVG 活动内容、外部引用和图片元数据，修复全部硬错误并人工复核提醒
+- 第六步，运行 `scripts/audit_readme.py <仓库路径> --strict-warnings`，检查双语结构、一级大标题居中、链接、秘密、用户目录路径、Mermaid 方向、装饰性编号、SVG 活动内容、外部引用和图片元数据，修复全部硬错误并人工复核提醒
 
 - 第七步，在亮色、暗色和窄屏环境渲染 README，检查图片、表格、代码、流程图、链接和页面级横向溢出
 
@@ -60,6 +60,7 @@ description: Audit, create, or upgrade GitHub repository READMEs with evidence-b
 
 - `README.md` 默认使用简体中文，`README.en.md` 提供英文镜像，项目惯例或用户指令可以调整主次
 - 首屏保留项目标志或名称、一级标题、价值短句、可信状态、稳定入口和第一视觉证据
+- 每份 README 的所有一级大标题必须使用语义化 `<h1>`，并通过 `align="center"` 或带 `align="center"` 的外层容器居中；Markdown `# 标题` 和未居中的 `<h1>` 返回硬错误 `H1_NOT_CENTERED`
 - 顶部只保留能够改变读者下一步的稳定入口，动态徽章和远程图片需要说明用途、隐私影响和维护责任
 - 星标、访问量、下载量、贡献热力和趋势图只放页面末尾，不能代替第一视觉证据、功能证据或质量结论
 - Mermaid 的 `flowchart` 和 `graph` 必须明确使用 `TD` 或 `TB`，横向方向和缺失方向返回硬错误
