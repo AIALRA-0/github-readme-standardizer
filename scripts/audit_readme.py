@@ -364,7 +364,8 @@ def audit_caption_positions(
             candidate += 1
         return candidate if candidate < len(lines) else None
 
-    for kind, start, end in markdown_object_ranges(text):
+    objects = markdown_object_ranges(text)
+    for object_index, (kind, start, end) in enumerate(objects):
         start_line = line_number(text, start) - 1
         end_line = line_number(text, max(start, end - 1)) - 1
         before = nonblank_before(start_line)
@@ -372,7 +373,12 @@ def audit_caption_positions(
         before_caption = before is not None and caption_kind(lines[before]) == kind
         after_caption = after is not None and caption_kind(lines[after]) == kind
         caption_above_allowed = publication_standard == "ieee" and kind == "table"
-        if before_caption and not caption_above_allowed:
+        belongs_to_previous = False
+        if before_caption and object_index > 0:
+            previous_kind, previous_start, previous_end = objects[object_index - 1]
+            previous_end_line = line_number(text, max(previous_start, previous_end - 1)) - 1
+            belongs_to_previous = previous_kind == kind and nonblank_after(previous_end_line) == before
+        if before_caption and not caption_above_allowed and not belongs_to_previous:
             add_finding(
                 findings,
                 "error",
