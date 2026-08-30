@@ -208,6 +208,20 @@ class AuditReadmeTests(unittest.TestCase):
         self.assertIn("PARALLEL_ITEMS_INLINE", codes)
         self.assertIn("LIST_NESTING_REQUIRED", codes)
 
+    def test_nested_classification_allows_following_sibling(self) -> None:
+        # A sibling after correctly indented children must not be treated as another child.
+        valid = "\n\n- 分类：\n  - 子项一\n  - 子项二\n- 下一个分类：说明\n"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
+            (root / "README.md").write_text(GOOD_ZH + valid, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN, encoding="utf-8")
+
+            result = audit_repository(root)
+
+        self.assertNotIn("LIST_NESTING_REQUIRED", {item["code"] for item in result["errors"]})
+
     def test_three_step_flow_requires_mermaid(self) -> None:
         # Require a diagram for three observable process nodes and accept a vertical diagram.
         steps = "\n\n第一步，读取\n\n第二步，检查\n\n第三步，输出\n"

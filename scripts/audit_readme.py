@@ -432,14 +432,17 @@ def audit_chinese_structure(text: str, readme: Path, findings: list[Finding]) ->
                 break
             indent = len(item.group(1).replace("\t", "    "))
             if indent <= parent_indent:
-                add_finding(
-                    findings,
-                    "error",
-                    "LIST_NESTING_REQUIRED",
-                    readme,
-                    "列表项目内部的分类必须继续增加一级缩进",
-                    candidate + 1,
-                )
+                # A same-level item after one or more valid children is the next
+                # sibling, not a malformed child of the previous category.
+                if candidate == index + 1:
+                    add_finding(
+                        findings,
+                        "error",
+                        "LIST_NESTING_REQUIRED",
+                        readme,
+                        "列表项目内部的分类必须继续增加一级缩进",
+                        candidate + 1,
+                    )
                 break
             candidate += 1
 

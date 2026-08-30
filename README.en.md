@@ -207,7 +207,7 @@ The following results come from checks run against the current candidate on 2026
 | Target | Method | Current result | Evidence boundary |
 |---|---|---|---|
 | Skill structure and metadata | Skill Creator `quick_validate.py` | Passed | Naming, frontmatter, and unfinished scaffold placeholders |
-| Auditor behavior | `python scripts/test_audit_readme.py` | 28 tests passed | Bilingual structure, centered H1 titles, dotted numbering, caption placement, list nesting, Mermaid, terminology, Chinese full stops and line-ending semicolons, links, secrets, and visual assets |
+| Auditor behavior | `python scripts/test_audit_readme.py` | 29 tests passed | Bilingual structure, centered H1 titles, dotted numbering, caption placement, list nesting, Mermaid, terminology, Chinese full stops and line-ending semicolons, links, secrets, and visual assets |
 | Repository content | `audit_readme.py --scan-repository` | Passed with 0 errors and 0 warnings | 2 READMEs, 34 text files, 6 SVG files, and 0 raster images |
 | Chinese readability | `Test-HumanReadableChinese.ps1` | Passed with 0 hard errors and 10 terminology reminders | Numbering, prohibited constructions, terminology, and code comments |
 | GitHub rendering | Local Markdown HTML and Playwright browser review | Passed | 7 tables, 6 local images, 11 primary sections, and 1 Mermaid block; light and dark views pass at 1280-pixel desktop and 390-pixel mobile widths without page-level horizontal overflow |
