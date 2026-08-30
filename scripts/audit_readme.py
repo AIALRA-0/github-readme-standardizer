@@ -394,6 +394,17 @@ def audit_chinese_structure(text: str, readme: Path, findings: list[Finding]) ->
         add_finding(findings, "error", "CHINESE_FULL_STOP", readme, "普通中文正文禁止使用中文句号", line_number(text, match.start()))
 
     for line_index, line in enumerate(visible.splitlines(), start=1):
+        if re.search(r"；\s*$", line):
+            add_finding(
+                findings,
+                "error",
+                "CHINESE_LINE_END_SEMICOLON",
+                readme,
+                "普通中文正文和列表项目的行尾不得保留中文分号",
+                line_index,
+            )
+
+    for line_index, line in enumerate(visible.splitlines(), start=1):
         trigger = CHINESE_PARALLEL_TRIGGER.search(line)
         if trigger and len(CHINESE_PARALLEL_SEPARATOR.findall(trigger.group(1))) >= 2:
             add_finding(

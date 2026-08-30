@@ -215,7 +215,7 @@ Skill 按主要交付物选择一个主路由，混合项目可以增加少量�
 | 检查对象 | 验证方法 | 当前结果 | 证据边界 |
 |---|---|---|---|
 | Skill 结构与元数据 | Skill Creator `quick_validate.py` | 通过 | 检查命名、前置元数据和脚手架占位 |
-| 审核程序行为 | `python scripts/test_audit_readme.py` | 25 项测试通过 | 覆盖双语、居中大标题、带点编号、题注位置、列表缩进、Mermaid、术语、中文句号、链接、秘密和视觉资源 |
+| 审核程序行为 | `python scripts/test_audit_readme.py` | 28 项测试通过 | 覆盖双语、居中大标题、带点编号、题注位置、列表缩进、Mermaid、术语、中文句号、行尾分号、链接、秘密和视觉资源 |
 | 仓库内容 | `audit_readme.py --scan-repository` | 通过，0 个错误和 0 个提醒 | 2 份 README、34 个文本文件、6 个 SVG 和 0 个位图 |
 | 中文可读性 | `Test-HumanReadableChinese.ps1` | 通过，0 个硬错误和 10 个术语提醒 | 检查编号、禁用句式、术语和代码注释 |
 | GitHub 渲染 | 本地 Markdown HTML 与 Playwright 浏览器核对 | 通过 | 7 个表格、6 张本地图、11 个主章节和 1 个 Mermaid；1280 像素桌面宽度与 390 像素移动端宽度均覆盖亮色和暗色，页面无整体横向溢出 |

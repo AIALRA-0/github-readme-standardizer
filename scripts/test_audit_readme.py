@@ -130,6 +130,22 @@ class AuditReadmeTests(unittest.TestCase):
         self.assertEqual("FAIL", result["status"])
         self.assertIn("SECTION_NUMBER_FORMAT", {item["code"] for item in result["errors"]})
 
+    def test_decimal_heading_three_levels_pass(self) -> None:
+        # Accept dotted decimal numbering when every number depth matches its Markdown heading level.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
+            zh = GOOD_ZH + "\n### 2.1. 验证范围\n\n#### 2.1.1. 输入边界\n"
+            en = GOOD_EN + "\n### 2.1. Validation scope\n\n#### 2.1.1. Input boundary\n"
+            (root / "README.md").write_text(zh, encoding="utf-8")
+            (root / "README.en.md").write_text(en, encoding="utf-8")
+
+            result = audit_repository(root)
+
+        self.assertEqual("PASS", result["status"])
+        self.assertNotIn("SECTION_NUMBER_FORMAT", {item["code"] for item in result["errors"]})
+
     def test_default_caption_below_and_ieee_table_exception(self) -> None:
         # Keep ordinary captions below every object while allowing IEEE table captions above.
         table = "| 能力 | 状态 |\n|---|---|\n| 本地运行 | 已验证 |"
@@ -152,6 +168,29 @@ class AuditReadmeTests(unittest.TestCase):
         self.assertIn("CAPTION_POSITION", {item["code"] for item in run(above_zh, above_en)["errors"]})
         self.assertNotIn("CAPTION_POSITION", {item["code"] for item in run(above_zh, above_en, "ieee")["errors"]})
         self.assertIn("IEEE_TABLE_CAPTION_POSITION", {item["code"] for item in run(below_zh, below_en, "ieee")["errors"]})
+
+    def test_figure_and_mermaid_captions_stay_below_in_default_and_ieee_modes(self) -> None:
+        # Keep image and Mermaid captions below their objects even when the IEEE table exception is active.
+        image_zh = "![示例界面](docs/hero.svg)"
+        image_en = "![Example interface](docs/hero.svg)"
+        diagram = "```mermaid\nflowchart TD\nA[读取] --> B[检查]\nB --> C[输出]\n```"
+        below_zh = GOOD_ZH.replace(image_zh, image_zh + "\n\n图 1.1 示例界面") + "\n\n" + diagram + "\n\n图 2.1 验证流程\n"
+        below_en = GOOD_EN.replace(image_en, image_en + "\n\nFigure 1.1. Example interface") + "\n\n" + diagram + "\n\nFigure 2.1. Validation flow\n"
+        above_zh = GOOD_ZH.replace(image_zh, "图 1.1 示例界面\n\n" + image_zh) + "\n\n图 2.1 验证流程\n\n" + diagram + "\n"
+        above_en = GOOD_EN.replace(image_en, "Figure 1.1. Example interface\n\n" + image_en) + "\n\nFigure 2.1. Validation flow\n\n" + diagram + "\n"
+
+        def run(zh: str, en: str, standard: str) -> dict[str, object]:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                root = Path(temp_dir)
+                (root / "docs").mkdir()
+                (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
+                (root / "README.md").write_text(zh, encoding="utf-8")
+                (root / "README.en.md").write_text(en, encoding="utf-8")
+                return audit_repository(root, publication_standard=standard)
+
+        for standard in ("default", "ieee"):
+            self.assertNotIn("CAPTION_POSITION", {item["code"] for item in run(below_zh, below_en, standard)["errors"]})
+            self.assertIn("CAPTION_POSITION", {item["code"] for item in run(above_zh, above_en, standard)["errors"]})
 
     def test_parallel_items_and_nested_classification(self) -> None:
         # Reject inline parallel items and child categories that stay at the parent indentation.
@@ -224,6 +263,22 @@ class AuditReadmeTests(unittest.TestCase):
 
         self.assertNotIn("CHINESE_FULL_STOP", {item["code"] for item in literal_result["errors"]})
         self.assertIn("CHINESE_FULL_STOP", {item["code"] for item in body_result["errors"]})
+
+    def test_chinese_line_end_semicolon_excludes_literal_regions(self) -> None:
+        # Reject a Chinese semicolon at the end of body or list lines while preserving literal evidence.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
+            literal = "\n\n> 引文保留分号；\n\n```text\n日志保留分号；\n```\n"
+            (root / "README.md").write_text(GOOD_ZH + literal, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN, encoding="utf-8")
+            literal_result = audit_repository(root)
+            (root / "README.md").write_text(GOOD_ZH + "\n\n正文行尾包含分号；\n\n- 列表行尾包含分号；\n", encoding="utf-8")
+            body_result = audit_repository(root)
+
+        self.assertNotIn("CHINESE_LINE_END_SEMICOLON", {item["code"] for item in literal_result["errors"]})
+        self.assertEqual(2, sum(item["code"] == "CHINESE_LINE_END_SEMICOLON" for item in body_result["errors"]))
 
     def test_mermaid_direction_and_decorative_numbering_are_hard_errors(self) -> None:
         # Reject horizontal or implicit flowcharts and decorative numbering without blocking ordinary digits.
