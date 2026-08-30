@@ -192,6 +192,20 @@ class AuditReadmeTests(unittest.TestCase):
             self.assertNotIn("CAPTION_POSITION", {item["code"] for item in run(below_zh, below_en, standard)["errors"]})
             self.assertIn("CAPTION_POSITION", {item["code"] for item in run(above_zh, above_en, standard)["errors"]})
 
+    def test_figure_caption_before_table_is_not_a_table_caption(self) -> None:
+        # A figure caption can sit between a Mermaid block and the next table without becoming that table's caption.
+        diagram_and_table = "\n\n```mermaid\nflowchart TD\nA[读取] --> B[检查]\nB --> C[输出]\n```\n\n图 2.1 验证流程\n\n| 项目 | 结果 |\n|---|---|\n| 状态 | 通过 |\n"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
+            (root / "README.md").write_text(GOOD_ZH + diagram_and_table, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN + diagram_and_table.replace("图 2.1 验证流程", "Figure 2.1. Validation flow"), encoding="utf-8")
+
+            result = audit_repository(root)
+
+        self.assertNotIn("CAPTION_POSITION", {item["code"] for item in result["errors"]})
+
     def test_parallel_items_and_nested_classification(self) -> None:
         # Reject inline parallel items and child categories that stay at the parent indentation.
         invalid = "\n\n包括：第一项、第二项、第三项\n\n- 分类：\n- 子项一\n- 子项二\n"

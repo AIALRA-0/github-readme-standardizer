@@ -344,6 +344,14 @@ def audit_caption_positions(
 
     lines = text.splitlines()
 
+    def caption_kind(line: str) -> str | None:
+        stripped = line.strip()
+        if re.match(r"^(?:表|Table)\s+\d+(?:\.\d+)*[.\s\u3000]", stripped, flags=re.IGNORECASE):
+            return "table"
+        if re.match(r"^(?:图|Figure)\s+\d+(?:\.\d+)*[.\s\u3000]", stripped, flags=re.IGNORECASE):
+            return "figure"
+        return None
+
     def nonblank_before(line_index: int) -> int | None:
         candidate = line_index - 1
         while candidate >= 0 and not lines[candidate].strip():
@@ -361,8 +369,8 @@ def audit_caption_positions(
         end_line = line_number(text, max(start, end - 1)) - 1
         before = nonblank_before(start_line)
         after = nonblank_after(end_line)
-        before_caption = before is not None and CAPTION_PATTERN.match(lines[before].strip())
-        after_caption = after is not None and CAPTION_PATTERN.match(lines[after].strip())
+        before_caption = before is not None and caption_kind(lines[before]) == kind
+        after_caption = after is not None and caption_kind(lines[after]) == kind
         caption_above_allowed = publication_standard == "ieee" and kind == "table"
         if before_caption and not caption_above_allowed:
             add_finding(
