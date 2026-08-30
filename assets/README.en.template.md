@@ -29,22 +29,22 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/hero-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/hero-light.png">
-  <img src="docs/assets/readme/hero-light.png" alt="{{PROJECT_INTERFACE_TERMINAL_BEHAVIOR_OR_RUNTIME_RELATIONSHIP}}" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/hero-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/hero-light.svg">
+  <img src="docs/assets/readme/hero-light.svg" alt="{{PROJECT_INTERFACE_TERMINAL_BEHAVIOR_OR_RUNTIME_RELATIONSHIP}}" width="100%">
 </picture>
 
 <div align="center">
 
-Figure 1. {{FACTUAL_HERO_CAPTION}}
+Figure 1.1. {{FACTUAL_HERO_CAPTION}}
 
 </div>
 
-## 1 Project value
+## 1. Project value
 
 {{PROJECT_NAME}} helps {{TARGET_USERS}} complete {{PRIMARY_TASK}} and obtain {{OBSERVABLE_RESULT}}
 
-### 1.1 Choose a path
+### 1.1. Choose a path
 
 <table>
   <tr>
@@ -63,11 +63,9 @@ Figure 1. {{FACTUAL_HERO_CAPTION}}
   </tr>
 </table>
 
-## 2 Core capabilities
+## 2. Core capabilities
 
 <div align="center">
-
-Table 2.1. {{PROJECT_NAME}} core capabilities
 
 | Capability | Observable result | Current status |
 |---|---|---|
@@ -75,9 +73,11 @@ Table 2.1. {{PROJECT_NAME}} core capabilities
 | {{CAPABILITY_TWO}} | {{OBSERVABLE_RESULT}} | {{EVIDENCE_BACKED_STATUS}} |
 | {{CAPABILITY_THREE}} | {{OBSERVABLE_RESULT}} | {{EVIDENCE_BACKED_STATUS}} |
 
+Table 2.1. {{PROJECT_NAME}} core capabilities
+
 </div>
 
-## 3 Quick start
+## 3. Quick start
 
 Prerequisites: {{RUNTIME_PLATFORM_OR_PERMISSION_REQUIREMENTS}}
 
@@ -90,11 +90,11 @@ npm run dev # Start the local development environment and inspect its terminal o
 
 Expected result: {{OBSERVABLE_INTERFACE_FILE_OR_TERMINAL_OUTPUT}}
 
-## 4 Usage example
+## 4. Usage example
 
 {{DESCRIBE_THE_CORE_FLOW_WITH_REAL_SANITIZED_INPUT_ACTION_AND_OUTPUT}}
 
-## 5 System architecture
+## 5. System architecture
 
 The following flow shows how {{PRIMARY_INPUT}} passes through {{CORE_COMPONENTS}} and produces {{FINAL_OUTPUT}}
 
@@ -113,7 +113,7 @@ Figure 5.1. {{PROJECT_NAME}} core runtime relationship
 
 </div>
 
-### 5.1 Interface evidence (conditional)
+### 5.1. Interface evidence (conditional)
 
 Keep this module only when the repository has a real user interface and screenshots can be regenerated with synthetic data
 
@@ -122,19 +122,23 @@ Keep this module only when the repository has a real user interface and screensh
     <td width="50%"><img src="docs/assets/readme/ui/{{START_SCREEN_FILE}}" alt="{{START_STATE_PRIMARY_ACTION_AND_OBSERVABLE_TARGET}}" width="100%"></td>
     <td width="50%"><img src="docs/assets/readme/ui/{{RESULT_SCREEN_FILE}}" alt="{{RESULT_STATE_FEEDBACK_AND_NEXT_STEP}}" width="100%"></td>
   </tr>
-  <tr>
-    <td align="center">Figure 5.2. {{FACTUAL_START_STATE_CAPTION}}</td>
-    <td align="center">Figure 5.3. {{FACTUAL_RESULT_STATE_CAPTION}}</td>
-  </tr>
 </table>
 
-### 5.2 Scientific result (conditional)
+<div align="center">
+
+Figure 5.2. {{FACTUAL_START_STATE_CAPTION}}
+
+Figure 5.3. {{FACTUAL_RESULT_STATE_CAPTION}}
+
+</div>
+
+### 5.2. Scientific result (conditional)
 
 Keep this module only when the data, statistical definition, and reproduction entry point can be published
 
 <div align="center">
 
-![{{METRIC_COMPARISON_AND_MAIN_CONCLUSION}}](docs/assets/readme/plots/{{FIGURE_FILE}})
+<img src="docs/assets/readme/plots/{{FIGURE_FILE}}" alt="{{METRIC_COMPARISON_AND_MAIN_CONCLUSION}}" width="100%">
 
 Figure 5.4. x-axis: {{NAME_AND_UNIT}}; y-axis: {{NAME_AND_UNIT}}; sample size: {{COUNT}}; error: {{DEFINITION}}; updated {{DATE}}
 
@@ -142,7 +146,9 @@ Figure 5.4. x-axis: {{NAME_AND_UNIT}}; y-axis: {{NAME_AND_UNIT}}; sample size: {
 
 Data: [`{{DATA_FILE}}`]({{DATA_RELATIVE_PATH}}) · Reproduce: `{{REPRODUCTION_COMMAND}}` · Limitation: {{CONCLUSION_NOT_SUPPORTED_BY_THE_FIGURE}}
 
-### 5.3 Visual stability (keep when visuals exist)
+### 5.3. Visual stability (keep when visuals exist)
+
+<div align="center">
 
 | Scenario | Validation target | Current result | Evidence boundary |
 |---|---|---|---|
@@ -151,22 +157,26 @@ Data: [`{{DATA_FILE}}`]({{DATA_RELATIVE_PATH}}) · Reproduce: `{{REPRODUCTION_CO
 | Narrow viewport | {{TARGET}} | {{RESULT}} | {{SCOPE}} |
 | Image failure | Alt text, caption, and body | {{RESULT}} | {{SCOPE}} |
 
-## 6 Validation status
+Table 5.1. {{PROJECT_NAME}} visual-stability validation scope
+
+</div>
+
+## 6. Validation status
 
 The following results come from {{CHECK_COMMAND_CI_RECORD_OR_RELEASE_EVIDENCE}}
 
 <div align="center">
-
-Table 6.1. {{PROJECT_NAME}} validation scope
 
 | Check target | Validation method | Result | Evidence boundary |
 |---|---|---|---|
 | {{TARGET_ONE}} | `{{COMMAND_OR_RECORD}}` | {{RESULT}} | {{COVERAGE}} |
 | {{TARGET_TWO}} | `{{COMMAND_OR_RECORD}}` | {{RESULT}} | {{COVERAGE}} |
 
+Table 6.1. {{PROJECT_NAME}} validation scope
+
 </div>
 
-## 7 Data security
+## 7. Data security
 
 - {{DATA_SAVED_BY_THE_PROJECT_AND_STORAGE_LOCATION}}
 - {{EXTERNAL_SERVICE_ENABLEMENT_AND_LEAST_PRIVILEGE}}
@@ -174,19 +184,19 @@ Table 6.1. {{PROJECT_NAME}} validation scope
 - {{CHECK_RESULT_FOR_PIXELS_SVG_SOURCE_FILE_METADATA_AND_REMOTE_VISUAL_REQUESTS}}
 - Report vulnerabilities through the private channel in [SECURITY.md](SECURITY.md)
 
-## 8 Project status
+## 8. Project status
 
 Project status: {{RELEASED_EXPERIMENTAL_MAINTAINED_OR_ARCHIVED}}
 
 Supported scope: {{VERSIONS_PLATFORMS_AND_CAPABILITIES_BACKED_BY_EVIDENCE}}
 
-## 9 Limitations
+## 9. Limitations
 
 - {{UNSUPPORTED_USE_CASE}}
 - {{UNVERIFIED_PLATFORM_OR_ENVIRONMENT}}
 - {{DEPLOYMENT_OR_DATA_RESPONSIBILITY_RETAINED_BY_THE_USER}}
 
-## 10 Support and contributing
+## 10. Support and contributing
 
 - Usage questions: {{DISCUSSION_OR_DOCUMENTATION_ENTRY}}
 - Reproducible defects: {{ISSUE_TRACKER_ENTRY}}
@@ -194,12 +204,18 @@ Supported scope: {{VERSIONS_PLATFORMS_AND_CAPABILITIES_BACKED_BY_EVIDENCE}}
 - Contribution workflow: [CONTRIBUTING.md](CONTRIBUTING.md)
 - License terms: [LICENSE](LICENSE)
 
-## 11 Project pulse (conditional and always last)
+## 11. Project pulse (conditional and always last)
 
 Project pulse supplements current maintenance and community state. It cannot replace functional, performance, quality, or security evidence
+
+<div align="center">
 
 | Metric | Current status | Source and update time | Fallback |
 |---|---|---|---|
 | Current release | {{STATUS}} | {{SOURCE_AND_DATE}} | Releases page |
 | Build | {{STATUS}} | {{SOURCE_AND_DATE}} | Validation guide |
 | Community trend | {{STATUS_OR_REMOVE_THIS_ROW}} | {{PROVIDER_QUERY_SCOPE_AND_DATE}} | Native repository page |
+
+Table 11.1. {{PROJECT_NAME}} maintenance and community status
+
+</div>

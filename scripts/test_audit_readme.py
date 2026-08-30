@@ -16,11 +16,11 @@ GOOD_ZH = """<div align=\"center\"><h1>示例项目</h1></div>
 
 ![示例界面](docs/hero.svg)
 
-## 1 项目价值
+## 1. 项目价值
 
 [快速开始](#2-快速开始)
 
-## 2 快速开始
+## 2. 快速开始
 
 | 能力 | 状态 |
 |---|---|
@@ -35,11 +35,11 @@ GOOD_EN = """<div align=\"center\"><h1>Example Project</h1></div>
 
 ![Example interface](docs/hero.svg)
 
-## 1 Project value
+## 1. Project value
 
 [Quick start](#2-quick-start)
 
-## 2 Quick start
+## 2. Quick start
 
 | Capability | Status |
 |---|---|
@@ -114,6 +114,117 @@ class AuditReadmeTests(unittest.TestCase):
             codes = {item["code"] for item in result["errors"]}
             self.assertEqual(should_pass, "H1_NOT_CENTERED" not in codes)
 
+    def test_decimal_heading_format_and_depth(self) -> None:
+        # Require a trailing dot and the same number depth as the Markdown heading level.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
+            invalid_zh = GOOD_ZH.replace("## 2. 快速开始", "## 2 快速开始\n\n### 2.1.1. 层级错误")
+            invalid_en = GOOD_EN.replace("## 2. Quick start", "## 2 Quick start\n\n### 2.1.1. Wrong depth")
+            (root / "README.md").write_text(invalid_zh, encoding="utf-8")
+            (root / "README.en.md").write_text(invalid_en, encoding="utf-8")
+
+            result = audit_repository(root)
+
+        self.assertEqual("FAIL", result["status"])
+        self.assertIn("SECTION_NUMBER_FORMAT", {item["code"] for item in result["errors"]})
+
+    def test_default_caption_below_and_ieee_table_exception(self) -> None:
+        # Keep ordinary captions below every object while allowing IEEE table captions above.
+        table = "| 能力 | 状态 |\n|---|---|\n| 本地运行 | 已验证 |"
+        table_en = "| Capability | Status |\n|---|---|\n| Local runtime | Verified |"
+        below_zh = GOOD_ZH.replace(table, table + "\n\n表 2.1 验证结果")
+        below_en = GOOD_EN.replace(table_en, table_en + "\n\nTable 2.1. Validation result")
+        above_zh = GOOD_ZH.replace(table, "表 2.1 验证结果\n\n" + table)
+        above_en = GOOD_EN.replace(table_en, "Table 2.1. Validation result\n\n" + table_en)
+
+        def run(zh: str, en: str, standard: str = "default") -> dict[str, object]:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                root = Path(temp_dir)
+                (root / "docs").mkdir()
+                (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
+                (root / "README.md").write_text(zh, encoding="utf-8")
+                (root / "README.en.md").write_text(en, encoding="utf-8")
+                return audit_repository(root, publication_standard=standard)
+
+        self.assertNotIn("CAPTION_POSITION", {item["code"] for item in run(below_zh, below_en)["errors"]})
+        self.assertIn("CAPTION_POSITION", {item["code"] for item in run(above_zh, above_en)["errors"]})
+        self.assertNotIn("CAPTION_POSITION", {item["code"] for item in run(above_zh, above_en, "ieee")["errors"]})
+        self.assertIn("IEEE_TABLE_CAPTION_POSITION", {item["code"] for item in run(below_zh, below_en, "ieee")["errors"]})
+
+    def test_parallel_items_and_nested_classification(self) -> None:
+        # Reject inline parallel items and child categories that stay at the parent indentation.
+        invalid = "\n\n包括：第一项、第二项、第三项\n\n- 分类：\n- 子项一\n- 子项二\n"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
+            (root / "README.md").write_text(GOOD_ZH + invalid, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN, encoding="utf-8")
+
+            result = audit_repository(root)
+
+        codes = {item["code"] for item in result["errors"]}
+        self.assertIn("PARALLEL_ITEMS_INLINE", codes)
+        self.assertIn("LIST_NESTING_REQUIRED", codes)
+
+    def test_three_step_flow_requires_mermaid(self) -> None:
+        # Require a diagram for three observable process nodes and accept a vertical diagram.
+        steps = "\n\n第一步，读取\n\n第二步，检查\n\n第三步，输出\n"
+        diagram = "\n```mermaid\nflowchart TD\nA[读取] --> B[检查]\nB --> C[输出]\n```\n"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
+            (root / "README.md").write_text(GOOD_ZH + steps, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN, encoding="utf-8")
+            missing = audit_repository(root)
+            (root / "README.md").write_text(GOOD_ZH + steps + diagram, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN + diagram, encoding="utf-8")
+            present = audit_repository(root)
+
+        self.assertIn("MERMAID_REQUIRED", {item["code"] for item in missing["errors"]})
+        self.assertNotIn("MERMAID_REQUIRED", {item["code"] for item in present["errors"]})
+
+    def test_technical_term_spelling_explanation_and_webp_boundary(self) -> None:
+        # Preserve official spelling, require an operational explanation, and reject a fabricated WebP expansion.
+        bare = "\n\nnpm\n"
+        explained = "\n\nnpm 是 JavaScript 包管理工具，用于安装依赖；终端会显示安装进度，成功后可以运行项目\n\nWebP 是一种图片格式，用于缩小网页资源；浏览器会显示图片，加载失败时保留替代文本\n"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
+            (root / "README.md").write_text(GOOD_ZH + bare, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN, encoding="utf-8")
+            bare_result = audit_repository(root)
+            (root / "README.md").write_text(GOOD_ZH + explained, encoding="utf-8")
+            explained_result = audit_repository(root)
+            (root / "README.md").write_text(GOOD_ZH + "\n\nNPM 与 Web Picture\n", encoding="utf-8")
+            invalid_result = audit_repository(root)
+
+        self.assertIn("TERM_EXPLANATION_REVIEW", {item["code"] for item in bare_result["warnings"]})
+        self.assertNotIn("TERM_EXPLANATION_REVIEW", {item["code"] for item in explained_result["warnings"]})
+        invalid_codes = {item["code"] for item in invalid_result["errors"]}
+        self.assertIn("OFFICIAL_TERM_CASE", invalid_codes)
+        self.assertIn("FABRICATED_TERM_EXPANSION", invalid_codes)
+
+    def test_chinese_full_stop_excludes_literal_regions(self) -> None:
+        # Block ordinary Chinese full stops while preserving quoted and code evidence.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
+            literal = "\n\n> 引文保留句号。\n\n```text\n日志保留句号。\n```\n"
+            (root / "README.md").write_text(GOOD_ZH + literal, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN, encoding="utf-8")
+            literal_result = audit_repository(root)
+            (root / "README.md").write_text(GOOD_ZH + "\n\n正文包含句号。\n", encoding="utf-8")
+            body_result = audit_repository(root)
+
+        self.assertNotIn("CHINESE_FULL_STOP", {item["code"] for item in literal_result["errors"]})
+        self.assertIn("CHINESE_FULL_STOP", {item["code"] for item in body_result["errors"]})
+
     def test_mermaid_direction_and_decorative_numbering_are_hard_errors(self) -> None:
         # Reject horizontal or implicit flowcharts and decorative numbering without blocking ordinary digits.
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -174,10 +285,10 @@ class AuditReadmeTests(unittest.TestCase):
             (root / "docs").mkdir()
             (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
             zh = GOOD_ZH.replace("[快速开始](#2-快速开始)", "[快速开始](#quick-start)").replace(
-                "## 2 快速开始", '<a id="quick-start"></a>\n\n## 2 快速开始'
+                "## 2. 快速开始", '<a id="quick-start"></a>\n\n## 2. 快速开始'
             )
             en = GOOD_EN.replace("[Quick start](#2-quick-start)", "[Quick start](#quick-start)").replace(
-                "## 2 Quick start", '<a name="quick-start"></a>\n\n## 2 Quick start'
+                "## 2. Quick start", '<a name="quick-start"></a>\n\n## 2. Quick start'
             )
             (root / "README.md").write_text(zh, encoding="utf-8")
             (root / "README.en.md").write_text(en, encoding="utf-8")

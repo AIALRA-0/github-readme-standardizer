@@ -86,6 +86,11 @@ ALLOWLIST_FILENAME = ".readme-audit-allowlist.json"
 ALLOWLISTABLE_CODES = {"PRIVATE_IPV4"}
 DECORATIVE_NUMBERING_PATTERN = re.compile(r"[\u2460-\u2473\u24f5-\u24fe]|[0-9#*]\ufe0f?\u20e3")
 MERMAID_BLOCK_PATTERN = re.compile(r"(?ms)^```mermaid\s*\n(.*?)^```\s*$", flags=re.IGNORECASE)
+HEADING_PATTERN = re.compile(r"(?m)^(#{2,6})\s+(.+?)\s*$")
+CAPTION_PATTERN = re.compile(r"^(?:表|图|Table|Figure)\s+\d+(?:\.\d+)*[.\s\u3000].*$", flags=re.IGNORECASE)
+CHINESE_PARALLEL_TRIGGER = re.compile(r"(?:：|:|例如|包括|分为)([^\n]+)$")
+CHINESE_PARALLEL_SEPARATOR = re.compile(r"[、，；]|(?:\s(?:和|与|及)\s*)")
+FLOW_SIGNAL_PATTERN = re.compile(r"(?:第一步|第二步|第三步|第四步|第五步|第六步|如果|否则|失败后|重试|返回前一步)")
 
 
 def is_reserved_credential_url_fixture(match: re.Match[str]) -> bool:
@@ -266,6 +271,201 @@ def mask_fenced_code(text: str) -> str:
     return pattern.sub(lambda match: re.sub(r"[^\n]", " ", match.group(0)), text)
 
 
+def mask_literal_regions(text: str) -> str:
+    """Hide code, inline code, and blockquotes while preserving offsets."""
+
+    visible = mask_fenced_code(text)
+    visible = re.sub(r"`[^`\n]*`", lambda match: " " * len(match.group(0)), visible)
+    return re.sub(r"(?m)^\s*>.*$", lambda match: re.sub(r"[^\n]", " ", match.group(0)), visible)
+
+
+def audit_heading_numbers(text: str, readme: Path, findings: list[Finding]) -> list[str]:
+    """Require decimal section numbers whose depth matches the Markdown heading level."""
+
+    section_numbers: list[str] = []
+    visible = mask_fenced_code(text)
+    for match in HEADING_PATTERN.finditer(visible):
+        level = len(match.group(1))
+        title = match.group(2)
+        number = re.match(r"(\d+(?:\.\d+)*)\.\s+\S", title)
+        if number is None or len(number.group(1).split(".")) != level - 1:
+            add_finding(
+                findings,
+                "error",
+                "SECTION_NUMBER_FORMAT",
+                readme,
+                "Markdown 章节标题必须使用 1.、1.1. 或 1.1.1. 形式，并与标题层级一致",
+                line_number(text, match.start()),
+            )
+            continue
+        if level == 2:
+            section_numbers.append(number.group(1))
+    return section_numbers
+
+
+def markdown_object_ranges(text: str) -> list[tuple[str, int, int]]:
+    """Return Markdown table, image, and Mermaid object ranges."""
+
+    lines = text.splitlines(keepends=True)
+    offsets: list[int] = []
+    cursor = 0
+    for line in lines:
+        offsets.append(cursor)
+        cursor += len(line)
+
+    objects: list[tuple[str, int, int]] = []
+    index = 0
+    while index < len(lines) - 1:
+        if lines[index].lstrip().startswith("|") and re.match(r"^\s*\|(?:\s*:?-+:?\s*\|)+\s*$", lines[index + 1]):
+            end = index + 2
+            while end < len(lines) and lines[end].lstrip().startswith("|"):
+                end += 1
+            objects.append(("table", offsets[index], offsets[end] if end < len(lines) else len(text)))
+            index = end
+            continue
+        index += 1
+
+    for match in re.finditer(r"!\[[^\]]*\]\([^\n]+\)|<img\b[^>]*>", mask_fenced_code(text), flags=re.IGNORECASE):
+        objects.append(("figure", match.start(), match.end()))
+    for match in re.finditer(r"<table\b[^>]*>.*?</table\s*>", mask_fenced_code(text), flags=re.IGNORECASE | re.DOTALL):
+        objects.append(("table", match.start(), match.end()))
+    for match in MERMAID_BLOCK_PATTERN.finditer(text):
+        objects.append(("figure", match.start(), match.end()))
+    return sorted(objects, key=lambda item: item[1])
+
+
+def audit_caption_positions(
+    text: str,
+    readme: Path,
+    findings: list[Finding],
+    publication_standard: str,
+) -> None:
+    """Place captions below objects by default and preserve the IEEE table exception."""
+
+    lines = text.splitlines()
+
+    def nonblank_before(line_index: int) -> int | None:
+        candidate = line_index - 1
+        while candidate >= 0 and not lines[candidate].strip():
+            candidate -= 1
+        return candidate if candidate >= 0 else None
+
+    def nonblank_after(line_index: int) -> int | None:
+        candidate = line_index + 1
+        while candidate < len(lines) and not lines[candidate].strip():
+            candidate += 1
+        return candidate if candidate < len(lines) else None
+
+    for kind, start, end in markdown_object_ranges(text):
+        start_line = line_number(text, start) - 1
+        end_line = line_number(text, max(start, end - 1)) - 1
+        before = nonblank_before(start_line)
+        after = nonblank_after(end_line)
+        before_caption = before is not None and CAPTION_PATTERN.match(lines[before].strip())
+        after_caption = after is not None and CAPTION_PATTERN.match(lines[after].strip())
+        caption_above_allowed = publication_standard == "ieee" and kind == "table"
+        if before_caption and not caption_above_allowed:
+            add_finding(
+                findings,
+                "error",
+                "CAPTION_POSITION",
+                readme,
+                "普通 README 的表格、图片和 Mermaid 题注必须放在对象下方",
+                before + 1,
+            )
+        if after_caption and caption_above_allowed:
+            add_finding(
+                findings,
+                "error",
+                "IEEE_TABLE_CAPTION_POSITION",
+                readme,
+                "IEEE 规范的表题必须放在表格上方",
+                after + 1,
+            )
+
+
+def audit_chinese_structure(text: str, readme: Path, findings: list[Finding]) -> None:
+    """Check Chinese punctuation, inline parallel items, list nesting, and flow signals."""
+
+    if readme.name.lower() != "readme.md":
+        return
+    visible = mask_literal_regions(text)
+    for match in re.finditer("。", visible):
+        add_finding(findings, "error", "CHINESE_FULL_STOP", readme, "普通中文正文禁止使用中文句号", line_number(text, match.start()))
+
+    for line_index, line in enumerate(visible.splitlines(), start=1):
+        trigger = CHINESE_PARALLEL_TRIGGER.search(line)
+        if trigger and len(CHINESE_PARALLEL_SEPARATOR.findall(trigger.group(1))) >= 2:
+            add_finding(
+                findings,
+                "error",
+                "PARALLEL_ITEMS_INLINE",
+                readme,
+                "冒号、例如、包括或分为后有两个以上并列项时必须换行使用列表",
+                line_index,
+            )
+
+    list_lines = visible.splitlines()
+    for index, line in enumerate(list_lines):
+        parent = re.match(r"^(\s*)[-*+]\s+.*[:：]\s*$", line)
+        if parent is None:
+            continue
+        parent_indent = len(parent.group(1).replace("\t", "    "))
+        candidate = index + 1
+        while candidate < len(list_lines):
+            if not list_lines[candidate].strip():
+                candidate += 1
+                continue
+            item = re.match(r"^(\s*)[-*+]\s+", list_lines[candidate])
+            if item is None:
+                break
+            indent = len(item.group(1).replace("\t", "    "))
+            if indent <= parent_indent:
+                add_finding(
+                    findings,
+                    "error",
+                    "LIST_NESTING_REQUIRED",
+                    readme,
+                    "列表项目内部的分类必须继续增加一级缩进",
+                    candidate + 1,
+                )
+                break
+            candidate += 1
+
+    flow_signals = FLOW_SIGNAL_PATTERN.findall(visible)
+    if len(flow_signals) >= 3 and not MERMAID_BLOCK_PATTERN.search(text):
+        add_finding(findings, "error", "MERMAID_REQUIRED", readme, "三个以上流程节点、分支、重试或返回动作必须提供 Mermaid 图")
+
+
+def audit_technical_terms(text: str, readme: Path, findings: list[Finding]) -> None:
+    """Check official spelling and flag bare first-use operational terms for review."""
+
+    visible = mask_literal_regions(text)
+    for pattern, official in ((r"\bNPM\b", "npm"), (r"\b(?:WEBP|webp)\b", "WebP")):
+        for match in re.finditer(pattern, visible):
+            add_finding(findings, "error", "OFFICIAL_TERM_CASE", readme, f"技术名称必须保持官方拼写 {official}", line_number(text, match.start()))
+    for match in re.finditer(r"Web\s+Picture", visible, flags=re.IGNORECASE):
+        add_finding(findings, "error", "FABRICATED_TERM_EXPANSION", readme, "WebP 没有可用于 README 的官方全称，不得编造展开形式", line_number(text, match.start()))
+
+    if readme.name.lower() != "readme.md":
+        return
+    explanation_signals = re.compile(r"(?:是|用于|负责|表示|会|格式|工具|管理|生成|显示|结果)")
+    for term in ("npm", "WebP", "Mermaid"):
+        match = re.search(rf"\b{re.escape(term)}\b", visible)
+        if match is None:
+            continue
+        line = visible.splitlines()[line_number(visible, match.start()) - 1]
+        if not explanation_signals.search(line):
+            add_finding(
+                findings,
+                "warning",
+                "TERM_EXPLANATION_REVIEW",
+                readme,
+                f"{term} 首次出现时需要说明定义、用途、可观察表现和结果",
+                line_number(text, match.start()),
+            )
+
+
 def iter_repository_files(root: Path) -> Iterable[Path]:
     """Yield files while excluding generated dependency directories."""
 
@@ -426,13 +626,22 @@ def resolve_local_target(readme: Path, target: str) -> Path:
     return (readme.parent / normalized).resolve()
 
 
-def audit_readme_file(root: Path, readme: Path, findings: list[Finding]) -> dict[str, object]:
+def audit_readme_file(
+    root: Path,
+    readme: Path,
+    findings: list[Finding],
+    publication_standard: str = "default",
+) -> dict[str, object]:
     """Audit one README and return measurements used for bilingual comparison."""
 
     text = read_text(readme)
-    levels, slugs, section_numbers = heading_outline(text)
+    levels, slugs, _ = heading_outline(text)
+    section_numbers = audit_heading_numbers(text, readme, findings)
     valid_anchors = set(slugs) | explicit_html_anchors(text)
     links, images = extract_targets(text)
+    audit_caption_positions(text, readme, findings, publication_standard)
+    audit_chinese_structure(text, readme, findings)
+    audit_technical_terms(text, readme, findings)
 
     # Keep process order in vertical arrows and reject decorative numbering that competes with headings.
     for match in DECORATIVE_NUMBERING_PATTERN.finditer(mask_fenced_code(text)):
@@ -771,6 +980,7 @@ def audit_repository(
     zh_name: str = "README.md",
     en_name: str = "README.en.md",
     scan_repository: bool = False,
+    publication_standard: str = "default",
 ) -> dict[str, object]:
     """Audit a repository and return a serializable result."""
 
@@ -784,7 +994,7 @@ def audit_repository(
         if not readme.is_file():
             add_finding(findings, "error", "MISSING_README", readme.relative_to(root), "缺少要求的 README 文件")
             continue
-        readme_reports.append(audit_readme_file(root, readme, findings))
+        readme_reports.append(audit_readme_file(root, readme, findings, publication_standard))
 
     # Compare structural invariants while allowing natural translation differences.
     if len(readme_reports) == 2:
@@ -843,6 +1053,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         action="store_true",
         help="Return a failure code when manual-review warnings remain",
     )
+    parser.add_argument(
+        "--publication-standard",
+        choices=("default", "ieee"),
+        default="default",
+        help="Use default README captions or the IEEE table-caption exception",
+    )
     return parser.parse_args(argv)
 
 
@@ -854,7 +1070,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"status": "FAIL", "error": "repository path does not exist"}, ensure_ascii=False))
         return 2
 
-    result = audit_repository(args.repository, args.zh, args.en, args.scan_repository)
+    result = audit_repository(args.repository, args.zh, args.en, args.scan_repository, args.publication_standard)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     warning_count = int(result["summary"]["warning_count"])
     return 0 if result["status"] == "PASS" and (not args.strict_warnings or warning_count == 0) else 1

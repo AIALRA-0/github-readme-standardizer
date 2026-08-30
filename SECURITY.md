@@ -1,12 +1,12 @@
 # 安全报告
 
-## 1 支持范围
+## 1. 支持范围
 
 安全审核覆盖当前默认分支中的 Skill 指令、双语模板、参考文档、审核程序、测试夹具和本地视觉资产，包括图片像素、SVG 源码、文件元数据和远程视觉请求
 
 历史版本可能缺少当前门禁，使用者需要先更新到默认分支，再根据当前审核程序复现问题
 
-## 2 私密报告流程
+## 2. 私密报告流程
 
 - 第一步，停止公开传播相关文件、日志、截图和链接
 
@@ -20,13 +20,13 @@
 
 公开 Issue、Pull Request、讨论区和提交信息均不接收秘密值
 
-## 3 报告内容
+## 3. 报告内容
 
 报告应包含受影响文件的仓库相对路径、问题类别、最小复现步骤、预期安全行为和实际结果
 
 截图需要使用合成数据，无法安全重现的截图可以省略，并在报告中说明证据边界
 
-## 4 发布阻断条件
+## 4. 发布阻断条件
 
 以下任一情况都会阻止 Skill 或 README 发布：
 
@@ -38,7 +38,7 @@
 - SVG 包含脚本、事件处理器、外部引用、数据地址、文档类型或实体声明
 - 科学图缺少数据来源、统计定义或复现边界，却被用于支持质量或性能结论
 
-## 5 English reporting guide
+## 5. English reporting guide
 
 Security review covers the skill instructions, bilingual templates, references, auditor, test fixtures, and local visual assets on the current default branch
 
