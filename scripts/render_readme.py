@@ -6,9 +6,36 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import re
 from pathlib import Path
 
-import markdown
+from markdown_it import MarkdownIt
+
+
+def heading_slug(value: str, separator: str) -> str:
+    """Keep Unicode heading text for repository-style local anchor links."""
+    return re.sub(r"\s", separator, re.sub(r"[^\w\- ]", "", value.lower()))
+
+
+def render_body(source: str) -> str:
+    """Render CommonMark nesting while retaining tables and Unicode anchors."""
+    parser = MarkdownIt("commonmark", {"html": True}).enable("table")
+    tokens = parser.parse(source)
+    used: set[str] = set()
+    for index, token in enumerate(tokens):
+        if token.type != "heading_open":
+            continue
+        inline = tokens[index + 1]
+        label = "".join(child.content for child in inline.children or [] if child.type in {"text", "code_inline"})
+        base = heading_slug(label, "-")
+        slug = base
+        suffix = 1
+        while slug in used:
+            slug = f"{base}-{suffix}"
+            suffix += 1
+        used.add(slug)
+        token.attrSet("id", slug)
+    return parser.renderer.render(tokens, parser.options, {})
 
 
 CSS = """
@@ -31,11 +58,7 @@ body.dark { --canvas: #0d1117; --fg: #e6edf3; --muted: #161b22; --border: #30363
 
 def render(readme: Path, output: Path, theme: str) -> dict[str, object]:
     source = readme.read_text(encoding="utf-8")
-    body = markdown.markdown(
-        source,
-        extensions=["extra", "fenced_code", "tables", "sane_lists"],
-        output_format="html5",
-    )
+    body = render_body(source)
     title = html.escape(readme.name)
     document = (
         "<!doctype html><html><head><meta charset=\"utf-8\">"

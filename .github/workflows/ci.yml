@@ -30,6 +30,12 @@ jobs:
       - name: Run auditor tests
         run: python -X utf8 scripts/test_audit_readme.py
 
+      # Verify CommonMark nesting and local heading anchors with the preview parser
+      - name: Run preview tests
+        run: |
+          python -m pip install markdown-it-py==3.0.0
+          python -X utf8 scripts/test_render_readme.py
+
       # Treat unresolved warnings as a publication failure for the skill itself
       - name: Audit repository content
         run: python -X utf8 scripts/audit_readme.py . --scan-repository --strict-warnings

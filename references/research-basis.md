@@ -2,6 +2,21 @@
 
 ## 1. 研究结论
 
+### 1.1. 本次核对与采用依据
+
+本轮于 2026-09-09 核对官方说明及项目当前首页，以下是本仓库的设计选择，不代表已经证明某一种模板普遍最好
+
+- [平台首页说明](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes) 明确首页回答用途、上手、求助和维护信息，并建议详细内容另行组织，本次据此缩短默认骨架
+- 同一官方说明指出平台会根据标题提供目录，仓库内文件建议使用相对链接，本次采用少量任务入口并保留本地资源路径
+- [绘图项目首页](https://github.com/excalidraw/excalidraw) 区分在线产品和开发组件的使用入口，本次保留按主要交付物选择首次成功路径的做法
+- [开发工具首页](https://github.com/astral-sh/uv) 提供安装和使用入口，本次借鉴按操作组织说明，不照搬该项目的性能主张
+- [课程项目首页](https://github.com/rust-lang/book) 同时提供阅读与构建说明，本次将课程的首次成功定义为进入阅读，不强制安装流程
+- [开发组件首页](https://github.com/fastapi/fastapi) 提供代码示例和运行说明，本次要求示例同时说明输入与可观察结果
+
+本次没有复制这些项目的图片、标志或原文版式，新的头图直接绘制，素材角色见 [制作说明](../docs/assets/readme/hero-notes.md)
+
+### 1.2. 保留的结构判断
+
 高质量 README 共享项目身份、价值范围、第一证据、首次成功、可信边界和维护入口
 
 项目之间的首次成功动作存在显著差异，因此模板采用主路由和条件模块，不固定统一篇幅

@@ -12,6 +12,7 @@ from pathlib import Path
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 VIEWPORTS = {"desktop": (1280, 900), "mobile": (390, 844)}
@@ -40,7 +41,15 @@ def inspect(driver: webdriver.Chrome, page: Path, width: int, height: int) -> di
         "Emulation.setDeviceMetricsOverride",
         {"width": width, "height": height, "deviceScaleFactor": 1, "mobile": width <= 480},
     )
+    theme = "dark" if ".dark." in page.name else "light"
+    driver.execute_cdp_cmd(
+        "Emulation.setEmulatedMedia",
+        {"features": [{"name": "prefers-color-scheme", "value": theme}]},
+    )
     driver.get(page.resolve().as_uri())
+    WebDriverWait(driver, 10).until(
+        lambda browser: browser.execute_script("return [...document.images].every(image => image.complete)")
+    )
     data = driver.execute_script(
         """
         const root = document.documentElement;
@@ -52,18 +61,31 @@ def inspect(driver: webdriver.Chrome, page: Path, width: int, height: int) -> di
           imageCount: images.length,
           unloadedImages: images.filter(image => !image.complete || image.naturalWidth === 0).length,
           h1Found: Boolean(h1),
-          h1TextAlign: h1 ? getComputedStyle(h1).textAlign : null
+          h1TextAlign: h1 ? getComputedStyle(h1).textAlign : null,
+          missingAlt: images.filter(image => !image.alt.trim()).length,
+          brokenAnchors: [...document.querySelectorAll('a[href^="#"]')].filter(link => {
+            const id = decodeURIComponent(link.getAttribute('href').slice(1));
+            return id && !document.getElementById(id) && !document.getElementsByName(id).length;
+          }).map(link => link.getAttribute('href')),
+          darkMedia: matchMedia('(prefers-color-scheme: dark)').matches
         };
         """
     )
     data["page"] = page.name
     data["viewport"] = width
+    data["theme"] = theme
+    screenshot = page.with_name(f"{page.stem}.{width}.png")
+    driver.save_screenshot(str(screenshot))
+    data["screenshot"] = str(screenshot)
     data["overflow"] = data["scrollWidth"] > data["innerWidth"]
     data["passed"] = (
         not data["overflow"]
         and data["unloadedImages"] == 0
         and data["h1Found"]
         and data["h1TextAlign"] in {"center", "-webkit-center"}
+        and data["missingAlt"] == 0
+        and not data["brokenAnchors"]
+        and data["darkMedia"] == (theme == "dark")
     )
     return data
 
