@@ -2,17 +2,18 @@
 
 只复制证据充分的模块，替换全部占位值，并与英文模块保持同一编号
 
-## 1. 主视觉
+## 1 主视觉
 
+<div align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/hero-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/hero-light.svg">
-  <img src="docs/assets/readme/hero-light.svg" alt="{{主视觉展示的对象、关系和可得出的结论}}" width="100%">
+  <img src="docs/assets/readme/hero-light.svg" alt="{{主视觉展示的对象、关系和可得出的结论}}">
 </picture>
+<p>图 1.1　{{事实性图题，不使用无法核对的宣传语}}</p>
+</div>
 
-<div align="center">图 1.1　{{事实性图题，不使用无法核对的宣传语}}</div>
-
-## 2. 科学结果
+## 2 科学结果
 
 <div align="center">
 
@@ -24,22 +25,23 @@
 
 数据来源：[`{{数据文件}}`]({{数据相对路径}})　复现：`{{复现命令}}`　限制：{{不能由这张图推出的结论}}
 
-## 3. 界面组图
-
-<table>
-  <tr>
-    <td width="50%"><img src="docs/assets/readme/ui/{{界面一}}" alt="{{起始状态和主要操作}}" width="100%"></td>
-    <td width="50%"><img src="docs/assets/readme/ui/{{界面二}}" alt="{{结果状态和可观察反馈}}" width="100%"></td>
-  </tr>
-  <tr>
-    <td align="center">图 3.1　{{起始状态图题}}</td>
-    <td align="center">图 3.2　{{结果状态图题}}</td>
-  </tr>
-</table>
-
-## 4. 界面稳定性
+## 3 界面组图
 
 <div align="center">
+<img src="docs/assets/readme/ui/{{界面一}}" alt="{{起始状态和主要操作}}">
+<p>图 3.1　{{起始状态图题}}</p>
+</div>
+
+<div align="center">
+<img src="docs/assets/readme/ui/{{界面二}}" alt="{{结果状态和可观察反馈}}">
+<p>图 3.2　{{结果状态图题}}</p>
+</div>
+
+## 4 界面稳定性
+
+<div align="center">
+
+表 4.1　界面稳定性验证范围
 
 | 场景 | 验证对象 | 当前结果 | 证据边界 |
 |---|---|---|---|
@@ -48,27 +50,25 @@
 | 窄屏 | {{对象}} | {{结果}} | {{范围}} |
 | 图片失败 | 替代文本、图题和正文 | {{结果}} | {{范围}} |
 
-表 4.1　界面稳定性验证范围
-
 </div>
 
-## 5. 视觉隐私
+## 5 视觉隐私
 
 > [!IMPORTANT]
 > 本页视觉使用合成数据；发布前已检查像素、SVG 源码、图片元数据和外部请求。{{仍需说明的证据边界}}
 
-## 6. 项目动态
+## 6 项目动态
 
 项目动态只放在正文末尾，不能代替功能、性能和安全证据
 
 <div align="center">
+
+表 6.1　当前维护与社区状态
 
 | 指标 | 当前状态 | 来源与更新时间 | 失效后备 |
 |---|---|---|---|
 | 当前发布 | {{状态}} | {{来源与日期}} | 发布记录入口 |
 | 构建状态 | {{状态}} | {{来源与日期}} | 验证说明 |
 | 社区趋势 | {{状态或删除此行}} | {{提供方、范围与日期}} | 仓库原生入口 |
-
-表 6.1　当前维护与社区状态
 
 </div>

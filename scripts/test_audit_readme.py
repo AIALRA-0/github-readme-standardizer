@@ -12,38 +12,62 @@ from pathlib import Path
 from audit_readme import audit_repository
 
 
-GOOD_ZH = """<div align=\"center\"><h1>示例项目</h1></div>
+GOOD_ZH = """<div align=\"center\"><h1>示例项目</h1><p>帮助读者完成首次操作</p></div>
+
+<div align="center">
 
 ![示例界面](docs/hero.svg)
 
-## 1. 项目价值
+图 1.1 示例界面
+
+</div>
+
+## 1 项目价值
 
 [快速开始](#2-快速开始)
 
-## 2. 快速开始
+## 2 快速开始
+
+<div align="center">
+
+表 2.1 验证结果
 
 | 能力 | 状态 |
 |---|---|
 | 本地运行 | 已验证 |
+
+</div>
 
 ```text
 # 代码块中的井号不是 README 标题
 ```
 """
 
-GOOD_EN = """<div align=\"center\"><h1>Example Project</h1></div>
+GOOD_EN = """<div align=\"center\"><h1>Example Project</h1><p>Help readers complete their first task</p></div>
+
+<div align="center">
 
 ![Example interface](docs/hero.svg)
 
-## 1. Project value
+Figure 1.1. Example interface
+
+</div>
+
+## 1 Project value
 
 [Quick start](#2-quick-start)
 
-## 2. Quick start
+## 2 Quick start
+
+<div align="center">
+
+Table 2.1. Validation result
 
 | Capability | Status |
 |---|---|
 | Local runtime | Verified |
+
+</div>
 
 ```text
 # A hash inside a code fence is not a README heading
@@ -83,10 +107,10 @@ class AuditReadmeTests(unittest.TestCase):
             root = Path(temp_dir)
             (root / "lesson.md").write_text("Reading material", encoding="utf-8")
             (root / "README.md").write_text(
-                '<h1 align="center">课程</h1>\n\n## 1. 开始阅读\n\n[第一课](lesson.md)\n', encoding="utf-8"
+                '<div align="center"><h1>课程</h1><p>从第一课开始阅读</p></div>\n\n## 1 开始阅读\n\n[第一课](lesson.md)\n', encoding="utf-8"
             )
             (root / "README.en.md").write_text(
-                '<h1 align="center">Course</h1>\n\n## 1. Start reading\n\n[Lesson](lesson.md)\n', encoding="utf-8"
+                '<div align="center"><h1>Course</h1><p>Start with the first lesson</p></div>\n\n## 1 Start reading\n\n[Lesson](lesson.md)\n', encoding="utf-8"
             )
             result = audit_repository(root)
         self.assertEqual("PASS", result["status"])
@@ -121,8 +145,8 @@ class AuditReadmeTests(unittest.TestCase):
                 root = Path(temp_dir)
                 (root / "docs").mkdir()
                 (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
-                (root / "README.md").write_text(GOOD_ZH.replace('<div align="center"><h1>示例项目</h1></div>', zh_title), encoding="utf-8")
-                (root / "README.en.md").write_text(GOOD_EN.replace('<div align="center"><h1>Example Project</h1></div>', en_title), encoding="utf-8")
+                (root / "README.md").write_text(GOOD_ZH.replace('<div align="center"><h1>示例项目</h1><p>帮助读者完成首次操作</p></div>', zh_title), encoding="utf-8")
+                (root / "README.en.md").write_text(GOOD_EN.replace('<div align="center"><h1>Example Project</h1><p>Help readers complete their first task</p></div>', en_title), encoding="utf-8")
 
                 result = audit_repository(root)
 
@@ -130,13 +154,13 @@ class AuditReadmeTests(unittest.TestCase):
             self.assertEqual(should_pass, "H1_NOT_CENTERED" not in codes)
 
     def test_decimal_heading_format_and_depth(self) -> None:
-        # Require a trailing dot and the same number depth as the Markdown heading level.
+        # Require decimal hierarchy without a trailing dot and match number depth to heading level.
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             (root / "docs").mkdir()
             (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
-            invalid_zh = GOOD_ZH.replace("## 2. 快速开始", "## 2 快速开始\n\n### 2.1.1. 层级错误")
-            invalid_en = GOOD_EN.replace("## 2. Quick start", "## 2 Quick start\n\n### 2.1.1. Wrong depth")
+            invalid_zh = GOOD_ZH.replace("## 2 快速开始", "## 2. 快速开始\n\n### 2.1.1 层级错误")
+            invalid_en = GOOD_EN.replace("## 2 Quick start", "## 2. Quick start\n\n### 2.1.1 Wrong depth")
             (root / "README.md").write_text(invalid_zh, encoding="utf-8")
             (root / "README.en.md").write_text(invalid_en, encoding="utf-8")
 
@@ -145,14 +169,84 @@ class AuditReadmeTests(unittest.TestCase):
         self.assertEqual("FAIL", result["status"])
         self.assertIn("SECTION_NUMBER_FORMAT", {item["code"] for item in result["errors"]})
 
+    def test_lead_section_centers_title_and_value_together(self) -> None:
+        # Centering only the H1 does not center the full lead section.
+        invalid_zh = GOOD_ZH.replace(
+            '<div align="center"><h1>示例项目</h1><p>帮助读者完成首次操作</p></div>',
+            '<h1 align="center">示例项目</h1>\n\n帮助读者完成首次操作',
+        )
+        invalid_en = GOOD_EN.replace(
+            '<div align="center"><h1>Example Project</h1><p>Help readers complete their first task</p></div>',
+            '<h1 align="center">Example Project</h1>\n\nHelp readers complete their first task',
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs").mkdir()
+            (root / "docs" / "hero.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg"></svg>', encoding="utf-8")
+            (root / "README.md").write_text(invalid_zh, encoding="utf-8")
+            (root / "README.en.md").write_text(invalid_en, encoding="utf-8")
+            result = audit_repository(root)
+        self.assertIn("LEAD_SECTION_NOT_CENTERED", {item["code"] for item in result["errors"]})
+
+    def test_hero_and_caption_share_centered_container(self) -> None:
+        # Detect an uncentered hero and a caption moved outside its centered container.
+        centered_zh = '<div align="center">\n\n![示例界面](docs/hero.svg)\n\n图 1.1 示例界面\n\n</div>'
+        centered_en = '<div align="center">\n\n![Example interface](docs/hero.svg)\n\nFigure 1.1. Example interface\n\n</div>'
+        uncentered_zh = '![示例界面](docs/hero.svg)\n\n图 1.1 示例界面'
+        uncentered_en = '![Example interface](docs/hero.svg)\n\nFigure 1.1. Example interface'
+        detached_zh = '<div align="center">\n\n![示例界面](docs/hero.svg)\n\n</div>\n\n图 1.1 示例界面'
+        detached_en = '<div align="center">\n\n![Example interface](docs/hero.svg)\n\n</div>\n\nFigure 1.1. Example interface'
+
+        def run(zh_hero: str, en_hero: str) -> set[str]:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                root = Path(temp_dir)
+                (root / "docs").mkdir()
+                (root / "docs" / "hero.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg"></svg>', encoding="utf-8")
+                (root / "README.md").write_text(GOOD_ZH.replace(centered_zh, zh_hero), encoding="utf-8")
+                (root / "README.en.md").write_text(GOOD_EN.replace(centered_en, en_hero), encoding="utf-8")
+                return {item["code"] for item in audit_repository(root)["errors"]}
+
+        self.assertIn("HERO_NOT_CENTERED", run(uncentered_zh, uncentered_en))
+        self.assertIn("HERO_CAPTION_NOT_CENTERED", run(detached_zh, detached_en))
+        self.assertNotIn("HERO_NOT_CENTERED", run(centered_zh, centered_en))
+
+    def test_all_visual_objects_and_captions_share_centered_divs(self) -> None:
+        # Apply the current writing skill's centering rule beyond the hero block.
+        centered_table_zh = '<div align="center">\n\n表 2.1 验证结果\n\n| 能力 | 状态 |\n|---|---|\n| 本地运行 | 已验证 |\n\n</div>'
+        centered_table_en = '<div align="center">\n\nTable 2.1. Validation result\n\n| Capability | Status |\n|---|---|\n| Local runtime | Verified |\n\n</div>'
+        plain_table_zh = '表 2.1 验证结果\n\n| 能力 | 状态 |\n|---|---|\n| 本地运行 | 已验证 |'
+        plain_table_en = 'Table 2.1. Validation result\n\n| Capability | Status |\n|---|---|\n| Local runtime | Verified |'
+        centered_figure_zh = '<div align="center">\n<img src="docs/hero.svg" alt="正文界面">\n<p>图 2.1 正文界面</p>\n</div>'
+        centered_figure_en = '<div align="center">\n<img src="docs/hero.svg" alt="Body interface">\n<p>Figure 2.1. Body interface</p>\n</div>'
+        plain_figure_zh = '<img src="docs/hero.svg" alt="正文界面">\n<p>图 2.1 正文界面</p>'
+        plain_figure_en = '<img src="docs/hero.svg" alt="Body interface">\n<p>Figure 2.1. Body interface</p>'
+        detached_figure_zh = '<div align="center">\n<img src="docs/hero.svg" alt="正文界面">\n</div>\n<p>图 2.1 正文界面</p>'
+        detached_figure_en = '<div align="center">\n<img src="docs/hero.svg" alt="Body interface">\n</div>\n<p>Figure 2.1. Body interface</p>'
+
+        def run(zh: str, en: str) -> set[str]:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                root = Path(temp_dir)
+                (root / "docs").mkdir()
+                (root / "docs" / "hero.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg"></svg>', encoding="utf-8")
+                (root / "README.md").write_text(zh, encoding="utf-8")
+                (root / "README.en.md").write_text(en, encoding="utf-8")
+                return {item["code"] for item in audit_repository(root)["errors"]}
+
+        self.assertIn("TABLE_NOT_CENTERED", run(GOOD_ZH.replace(centered_table_zh, plain_table_zh), GOOD_EN.replace(centered_table_en, plain_table_en)))
+        self.assertIn("FIGURE_NOT_CENTERED", run(GOOD_ZH + "\n" + plain_figure_zh, GOOD_EN + "\n" + plain_figure_en))
+        self.assertIn("VISUAL_CAPTION_NOT_CENTERED", run(GOOD_ZH + "\n" + detached_figure_zh, GOOD_EN + "\n" + detached_figure_en))
+        centered_codes = run(GOOD_ZH + "\n" + centered_figure_zh, GOOD_EN + "\n" + centered_figure_en)
+        self.assertNotIn("FIGURE_NOT_CENTERED", centered_codes)
+        self.assertNotIn("VISUAL_CAPTION_NOT_CENTERED", centered_codes)
+
     def test_decimal_heading_three_levels_pass(self) -> None:
         # Accept dotted decimal numbering when every number depth matches its Markdown heading level.
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             (root / "docs").mkdir()
             (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
-            zh = GOOD_ZH + "\n### 2.1. 验证范围\n\n#### 2.1.1. 输入边界\n"
-            en = GOOD_EN + "\n### 2.1. Validation scope\n\n#### 2.1.1. Input boundary\n"
+            zh = GOOD_ZH + "\n### 2.1 验证范围\n\n#### 2.1.1 输入边界\n"
+            en = GOOD_EN + "\n### 2.1 Validation scope\n\n#### 2.1.1 Input boundary\n"
             (root / "README.md").write_text(zh, encoding="utf-8")
             (root / "README.en.md").write_text(en, encoding="utf-8")
 
@@ -161,14 +255,14 @@ class AuditReadmeTests(unittest.TestCase):
         self.assertEqual("PASS", result["status"])
         self.assertNotIn("SECTION_NUMBER_FORMAT", {item["code"] for item in result["errors"]})
 
-    def test_default_caption_below_and_ieee_table_exception(self) -> None:
-        # Keep ordinary captions below every object while allowing IEEE table captions above.
+    def test_table_title_stays_above_in_all_modes(self) -> None:
+        # The current writing rules use one table-title position for every supported mode.
         table = "| 能力 | 状态 |\n|---|---|\n| 本地运行 | 已验证 |"
         table_en = "| Capability | Status |\n|---|---|\n| Local runtime | Verified |"
-        below_zh = GOOD_ZH.replace(table, table + "\n\n表 2.1 验证结果")
-        below_en = GOOD_EN.replace(table_en, table_en + "\n\nTable 2.1. Validation result")
-        above_zh = GOOD_ZH.replace(table, "表 2.1 验证结果\n\n" + table)
-        above_en = GOOD_EN.replace(table_en, "Table 2.1. Validation result\n\n" + table_en)
+        above_zh = GOOD_ZH
+        above_en = GOOD_EN
+        below_zh = GOOD_ZH.replace("表 2.1 验证结果\n\n" + table, table + "\n\n表 2.1 验证结果")
+        below_en = GOOD_EN.replace("Table 2.1. Validation result\n\n" + table_en, table_en + "\n\nTable 2.1. Validation result")
 
         def run(zh: str, en: str, standard: str = "default") -> dict[str, object]:
             with tempfile.TemporaryDirectory() as temp_dir:
@@ -179,20 +273,19 @@ class AuditReadmeTests(unittest.TestCase):
                 (root / "README.en.md").write_text(en, encoding="utf-8")
                 return audit_repository(root, publication_standard=standard)
 
-        self.assertNotIn("CAPTION_POSITION", {item["code"] for item in run(below_zh, below_en)["errors"]})
-        self.assertIn("CAPTION_POSITION", {item["code"] for item in run(above_zh, above_en)["errors"]})
-        self.assertNotIn("CAPTION_POSITION", {item["code"] for item in run(above_zh, above_en, "ieee")["errors"]})
-        self.assertIn("IEEE_TABLE_CAPTION_POSITION", {item["code"] for item in run(below_zh, below_en, "ieee")["errors"]})
+        for standard in ("default", "ieee"):
+            self.assertNotIn("CAPTION_POSITION", {item["code"] for item in run(above_zh, above_en, standard)["errors"]})
+            self.assertIn("CAPTION_POSITION", {item["code"] for item in run(below_zh, below_en, standard)["errors"]})
 
     def test_figure_and_mermaid_captions_stay_below_in_default_and_ieee_modes(self) -> None:
-        # Keep image and Mermaid captions below their objects even when the IEEE table exception is active.
+        # Keep image and Mermaid captions below their objects in every supported mode.
         image_zh = "![示例界面](docs/hero.svg)"
         image_en = "![Example interface](docs/hero.svg)"
         diagram = "```mermaid\nflowchart TD\nA[读取] --> B[检查]\nB --> C[输出]\n```"
-        below_zh = GOOD_ZH.replace(image_zh, image_zh + "\n\n图 1.1 示例界面") + "\n\n" + diagram + "\n\n图 2.1 验证流程\n"
-        below_en = GOOD_EN.replace(image_en, image_en + "\n\nFigure 1.1. Example interface") + "\n\n" + diagram + "\n\nFigure 2.1. Validation flow\n"
-        above_zh = GOOD_ZH.replace(image_zh, "图 1.1 示例界面\n\n" + image_zh) + "\n\n图 2.1 验证流程\n\n" + diagram + "\n"
-        above_en = GOOD_EN.replace(image_en, "Figure 1.1. Example interface\n\n" + image_en) + "\n\nFigure 2.1. Validation flow\n\n" + diagram + "\n"
+        below_zh = GOOD_ZH + "\n<div align=\"center\">\n\n" + image_zh + "\n\n图 2.1 示例界面\n\n</div>\n\n<div align=\"center\">\n\n" + diagram + "\n\n图 2.2 验证流程\n\n</div>\n"
+        below_en = GOOD_EN + "\n<div align=\"center\">\n\n" + image_en + "\n\nFigure 2.1. Example interface\n\n</div>\n\n<div align=\"center\">\n\n" + diagram + "\n\nFigure 2.2. Validation flow\n\n</div>\n"
+        above_zh = GOOD_ZH + "\n<div align=\"center\">\n\n图 2.1 示例界面\n\n" + image_zh + "\n\n</div>\n\n<div align=\"center\">\n\n图 2.2 验证流程\n\n" + diagram + "\n\n</div>\n"
+        above_en = GOOD_EN + "\n<div align=\"center\">\n\nFigure 2.1. Example interface\n\n" + image_en + "\n\n</div>\n\n<div align=\"center\">\n\nFigure 2.2. Validation flow\n\n" + diagram + "\n\n</div>\n"
 
         def run(zh: str, en: str, standard: str) -> dict[str, object]:
             with tempfile.TemporaryDirectory() as temp_dir:
@@ -209,13 +302,19 @@ class AuditReadmeTests(unittest.TestCase):
 
     def test_figure_caption_before_table_is_not_a_table_caption(self) -> None:
         # A figure caption can sit between a Mermaid block and the next table without becoming that table's caption.
-        diagram_and_table = "\n\n```mermaid\nflowchart TD\nA[读取] --> B[检查]\nB --> C[输出]\n```\n\n图 2.1 验证流程\n\n| 项目 | 结果 |\n|---|---|\n| 状态 | 通过 |\n"
+        diagram_and_table = "\n\n<div align=\"center\">\n\n```mermaid\nflowchart TD\nA[读取] --> B[检查]\nB --> C[输出]\n```\n\n图 2.1 验证流程\n\n</div>\n\n<div align=\"center\">\n\n表 2.2 验证结果\n\n| 项目 | 结果 |\n|---|---|\n| 状态 | 通过 |\n\n</div>\n"
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             (root / "docs").mkdir()
             (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
             (root / "README.md").write_text(GOOD_ZH + diagram_and_table, encoding="utf-8")
-            (root / "README.en.md").write_text(GOOD_EN + diagram_and_table.replace("图 2.1 验证流程", "Figure 2.1. Validation flow"), encoding="utf-8")
+            (root / "README.en.md").write_text(
+                GOOD_EN
+                + diagram_and_table.replace("图 2.1 验证流程", "Figure 2.1. Validation flow").replace(
+                    "表 2.2 验证结果", "Table 2.2. Validation result"
+                ),
+                encoding="utf-8",
+            )
 
             result = audit_repository(root)
 
@@ -223,7 +322,7 @@ class AuditReadmeTests(unittest.TestCase):
 
     def test_consecutive_figures_accept_one_caption_below_each_figure(self) -> None:
         # The caption below one figure can also appear immediately before the next figure without changing ownership.
-        figures = "\n\n![界面一](docs/hero.svg)\n\n图 1.1 界面一\n\n![界面二](docs/hero.svg)\n\n图 1.2 界面二\n"
+        figures = "\n\n<div align=\"center\">\n\n![界面一](docs/hero.svg)\n\n图 2.1 界面一\n\n![界面二](docs/hero.svg)\n\n图 2.2 界面二\n\n</div>\n"
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             (root / "docs").mkdir()
@@ -231,8 +330,8 @@ class AuditReadmeTests(unittest.TestCase):
             (root / "README.md").write_text(GOOD_ZH + figures, encoding="utf-8")
             (root / "README.en.md").write_text(
                 GOOD_EN
-                + figures.replace("图 1.1 界面一", "Figure 1.1. Interface one").replace(
-                    "图 1.2 界面二", "Figure 1.2. Interface two"
+                + figures.replace("图 2.1 界面一", "Figure 2.1. Interface one").replace(
+                    "图 2.2 界面二", "Figure 2.2. Interface two"
                 ),
                 encoding="utf-8",
             )
@@ -381,9 +480,10 @@ class AuditReadmeTests(unittest.TestCase):
             root = Path(temp_dir)
             (root / "docs").mkdir()
             (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
-            diagram = "\n\nVersion 2.1\n\n```mermaid\ngraph TB\nA --> B\n```\n"
-            (root / "README.md").write_text(GOOD_ZH + diagram, encoding="utf-8")
-            (root / "README.en.md").write_text(GOOD_EN + diagram, encoding="utf-8")
+            diagram_zh = "\n\n版本 2.1\n\n<div align=\"center\">\n\n```mermaid\ngraph TB\nA --> B\n```\n\n图 2.1 验证流程\n\n</div>\n"
+            diagram_en = "\n\nVersion 2.1\n\n<div align=\"center\">\n\n```mermaid\ngraph TB\nA --> B\n```\n\nFigure 2.1. Validation flow\n\n</div>\n"
+            (root / "README.md").write_text(GOOD_ZH + diagram_zh, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN + diagram_en, encoding="utf-8")
 
             result = audit_repository(root)
 
@@ -418,10 +518,10 @@ class AuditReadmeTests(unittest.TestCase):
             (root / "docs").mkdir()
             (root / "docs" / "hero.svg").write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>", encoding="utf-8")
             zh = GOOD_ZH.replace("[快速开始](#2-快速开始)", "[快速开始](#quick-start)").replace(
-                "## 2. 快速开始", '<a id="quick-start"></a>\n\n## 2. 快速开始'
+                "## 2 快速开始", '<a id="quick-start"></a>\n\n## 2 快速开始'
             )
             en = GOOD_EN.replace("[Quick start](#2-quick-start)", "[Quick start](#quick-start)").replace(
-                "## 2. Quick start", '<a name="quick-start"></a>\n\n## 2. Quick start'
+                "## 2 Quick start", '<a name="quick-start"></a>\n\n## 2 Quick start'
             )
             (root / "README.md").write_text(zh, encoding="utf-8")
             (root / "README.en.md").write_text(en, encoding="utf-8")

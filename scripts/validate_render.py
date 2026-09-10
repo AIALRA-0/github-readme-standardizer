@@ -51,10 +51,40 @@ def inspect(driver: webdriver.Chrome, page: Path, width: int, height: int) -> di
         lambda browser: browser.execute_script("return [...document.images].every(image => image.complete)")
     )
     data = driver.execute_script(
-        """
+        r"""
         const root = document.documentElement;
         const images = [...document.images];
         const h1 = document.querySelector('h1');
+        const lead = h1 ? h1.closest('[align="center"]') : null;
+        const firstSection = document.querySelector('h2');
+        const hero = images.find(image =>
+          (!lead || !lead.contains(image)) &&
+          (!firstSection || Boolean(image.compareDocumentPosition(firstSection) & Node.DOCUMENT_POSITION_FOLLOWING))
+        );
+        const heroContainer = hero ? hero.closest('[align="center"]') : null;
+        const heroCaption = heroContainer ? [...heroContainer.querySelectorAll('p')].find(paragraph =>
+          /^(?:图\s+\d|Figure\s+\d)/i.test(paragraph.textContent.trim())
+        ) : null;
+        const visuallyCentered = element => {
+          if (!element) return false;
+          const parent = element.parentElement.getBoundingClientRect();
+          const box = element.getBoundingClientRect();
+          return Math.abs((box.left + box.right) / 2 - (parent.left + parent.right) / 2) <= 1;
+        };
+        const visualObjects = [...document.querySelectorAll('img, table')];
+        const visualCaptions = [...document.querySelectorAll('p')].filter(paragraph =>
+          /^(?:图|表)\s+\d|^(?:Figure|Table)\s+\d/i.test(paragraph.textContent.trim())
+        );
+        const visualBlocksCentered = visualObjects.every(element => {
+          const container = element.closest('[align="center"]');
+          if (!container || !visuallyCentered(element)) return false;
+          const expected = element.tagName === 'TABLE' ? /^(?:表|Table)\s+\d/i : /^(?:图|Figure)\s+\d/i;
+          return [...container.querySelectorAll('p')].some(paragraph => expected.test(paragraph.textContent.trim()));
+        });
+        const visualCaptionsCentered = visualCaptions.every(caption =>
+          Boolean(caption.closest('[align="center"]')) &&
+          ['center', '-webkit-center'].includes(getComputedStyle(caption).textAlign)
+        );
         return {
           innerWidth: window.innerWidth,
           scrollWidth: root.scrollWidth,
@@ -62,6 +92,16 @@ def inspect(driver: webdriver.Chrome, page: Path, width: int, height: int) -> di
           unloadedImages: images.filter(image => !image.complete || image.naturalWidth === 0).length,
           h1Found: Boolean(h1),
           h1TextAlign: h1 ? getComputedStyle(h1).textAlign : null,
+          leadSectionCentered: Boolean(lead) &&
+            [...lead.querySelectorAll('h1, p')].every(element => ['center', '-webkit-center'].includes(getComputedStyle(element).textAlign)) &&
+            [...lead.querySelectorAll('img')].every(visuallyCentered) &&
+            [...lead.querySelectorAll('p')].some(paragraph => paragraph.textContent.trim()),
+          heroFound: Boolean(hero),
+          heroCentered: !hero || Boolean(heroContainer) && visuallyCentered(hero),
+          heroCaptionCentered: !hero || Boolean(heroCaption) && ['center', '-webkit-center'].includes(getComputedStyle(heroCaption).textAlign),
+          visualObjectCount: visualObjects.length,
+          visualBlocksCentered,
+          visualCaptionsCentered,
           missingAlt: images.filter(image => !image.alt.trim()).length,
           brokenAnchors: [...document.querySelectorAll('a[href^="#"]')].filter(link => {
             const id = decodeURIComponent(link.getAttribute('href').slice(1));
@@ -83,6 +123,11 @@ def inspect(driver: webdriver.Chrome, page: Path, width: int, height: int) -> di
         and data["unloadedImages"] == 0
         and data["h1Found"]
         and data["h1TextAlign"] in {"center", "-webkit-center"}
+        and data["leadSectionCentered"]
+        and data["heroCentered"]
+        and data["heroCaptionCentered"]
+        and data["visualBlocksCentered"]
+        and data["visualCaptionsCentered"]
         and data["missingAlt"] == 0
         and not data["brokenAnchors"]
         and data["darkMedia"] == (theme == "dark")

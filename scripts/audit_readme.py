@@ -287,14 +287,14 @@ def audit_heading_numbers(text: str, readme: Path, findings: list[Finding]) -> l
     for match in HEADING_PATTERN.finditer(visible):
         level = len(match.group(1))
         title = match.group(2)
-        number = re.match(r"(\d+(?:\.\d+)*)\.\s+\S", title)
+        number = re.match(r"(\d+(?:\.\d+)*)\s+\S", title)
         if number is None or len(number.group(1).split(".")) != level - 1:
             add_finding(
                 findings,
                 "error",
                 "SECTION_NUMBER_FORMAT",
                 readme,
-                "Markdown 章节标题必须使用 1.、1.1. 或 1.1.1. 形式，并与标题层级一致",
+                "Markdown 章节标题必须使用 1、1.1 或 1.1.1 形式，并与标题层级一致",
                 line_number(text, match.start()),
             )
             continue
@@ -340,27 +340,30 @@ def audit_caption_positions(
     findings: list[Finding],
     publication_standard: str,
 ) -> None:
-    """Place captions below objects by default and preserve the IEEE table exception."""
+    """Place table titles above tables and figure captions below visual objects."""
 
     lines = text.splitlines()
 
     def caption_kind(line: str) -> str | None:
-        stripped = line.strip()
+        stripped = re.sub(r"<[^>]+>", "", line).strip()
         if re.match(r"^(?:表|Table)\s+\d+(?:\.\d+)*[.\s\u3000]", stripped, flags=re.IGNORECASE):
             return "table"
         if re.match(r"^(?:图|Figure)\s+\d+(?:\.\d+)*[.\s\u3000]", stripped, flags=re.IGNORECASE):
             return "figure"
         return None
 
+    def wrapper_only(line: str) -> bool:
+        return bool(re.fullmatch(r"</?(?:div|picture)(?:\s+[^>]*)?>", line.strip(), flags=re.IGNORECASE))
+
     def nonblank_before(line_index: int) -> int | None:
         candidate = line_index - 1
-        while candidate >= 0 and not lines[candidate].strip():
+        while candidate >= 0 and (not lines[candidate].strip() or wrapper_only(lines[candidate])):
             candidate -= 1
         return candidate if candidate >= 0 else None
 
     def nonblank_after(line_index: int) -> int | None:
         candidate = line_index + 1
-        while candidate < len(lines) and not lines[candidate].strip():
+        while candidate < len(lines) and (not lines[candidate].strip() or wrapper_only(lines[candidate])):
             candidate += 1
         return candidate if candidate < len(lines) else None
 
@@ -372,29 +375,38 @@ def audit_caption_positions(
         after = nonblank_after(end_line)
         before_caption = before is not None and caption_kind(lines[before]) == kind
         after_caption = after is not None and caption_kind(lines[after]) == kind
-        caption_above_allowed = publication_standard == "ieee" and kind == "table"
         belongs_to_previous = False
         if before_caption and object_index > 0:
             previous_kind, previous_start, previous_end = objects[object_index - 1]
             previous_end_line = line_number(text, max(previous_start, previous_end - 1)) - 1
             belongs_to_previous = previous_kind == kind and nonblank_after(previous_end_line) == before
-        if before_caption and not caption_above_allowed and not belongs_to_previous:
+        if kind == "figure" and before_caption and not belongs_to_previous:
             add_finding(
                 findings,
                 "error",
                 "CAPTION_POSITION",
                 readme,
-                "普通 README 的表格、图片和 Mermaid 题注必须放在对象下方",
+                "图片和 Mermaid 图题必须放在对象下方",
                 before + 1,
             )
-        if after_caption and caption_above_allowed:
+        if kind == "table" and after_caption:
             add_finding(
                 findings,
                 "error",
-                "IEEE_TABLE_CAPTION_POSITION",
+                "CAPTION_POSITION",
                 readme,
-                "IEEE 规范的表题必须放在表格上方",
+                "表题必须放在表格上方",
                 after + 1,
+            )
+        expected_caption = before_caption if kind == "table" else after_caption
+        if not expected_caption:
+            add_finding(
+                findings,
+                "error",
+                "TABLE_CAPTION_MISSING" if kind == "table" else "FIGURE_CAPTION_MISSING",
+                readme,
+                "表格缺少位于对象上方的编号表题" if kind == "table" else "图片或 Mermaid 缺少位于对象下方的编号图题",
+                start_line + 1,
             )
 
 
@@ -568,22 +580,39 @@ def explicit_html_anchors(text: str) -> set[str]:
     return anchors
 
 
-def h1_alignment(text: str) -> tuple[int, list[int]]:
-    """Count visible H1 titles and return line numbers for titles that are not centered."""
+def centered_container_ranges(text: str) -> list[tuple[int, int]]:
+    """Return GitHub-compatible HTML containers that center their contents."""
 
     visible_text = mask_fenced_code(text)
-    markdown_h1 = list(re.finditer(r"(?m)^#\s+.+?\s*$", visible_text))
-    html_h1 = list(re.finditer(r"<h1\b([^>]*)>.*?</h1\s*>", visible_text, flags=re.IGNORECASE | re.DOTALL))
-    centered_ranges: list[tuple[int, int]] = []
-
-    # GitHub preserves the align attribute, while CSS-based centering can be stripped during rendering.
+    ranges: list[tuple[int, int]] = []
     for container in re.finditer(
         r"<(div|p)\b([^>]*)>.*?</\1\s*>",
         visible_text,
         flags=re.IGNORECASE | re.DOTALL,
     ):
         if re.search(r"\balign\s*=\s*(?:[\"']center[\"']|center)(?:\s|$)", container.group(2), flags=re.IGNORECASE):
-            centered_ranges.append(container.span())
+            ranges.append(container.span())
+    return ranges
+
+
+def centered_div_ranges(text: str) -> list[tuple[int, int]]:
+    """Return centered div ranges used for complete GitHub visual blocks."""
+
+    visible_text = mask_fenced_code(text)
+    return [
+        (start, end)
+        for start, end in centered_container_ranges(text)
+        if re.match(r"<div\b", visible_text[start:end], flags=re.IGNORECASE)
+    ]
+
+
+def h1_alignment(text: str) -> tuple[int, list[int]]:
+    """Count visible H1 titles and return line numbers for titles that are not centered."""
+
+    visible_text = mask_fenced_code(text)
+    markdown_h1 = list(re.finditer(r"(?m)^#\s+.+?\s*$", visible_text))
+    html_h1 = list(re.finditer(r"<h1\b([^>]*)>.*?</h1\s*>", visible_text, flags=re.IGNORECASE | re.DOTALL))
+    centered_ranges = centered_container_ranges(text)
 
     uncentered_lines = [line_number(text, match.start()) for match in markdown_h1]
     for match in html_h1:
@@ -596,6 +625,142 @@ def h1_alignment(text: str) -> tuple[int, list[int]]:
 
     return len(markdown_h1) + len(html_h1), uncentered_lines
 
+
+def audit_lead_and_hero_centering(text: str, readme: Path, findings: list[Finding]) -> None:
+    """Require one centered lead block and a centered optional hero with its caption."""
+
+    visible_text = mask_fenced_code(text)
+    centered_ranges = centered_container_ranges(text)
+    h1 = re.search(r"<h1\b[^>]*>.*?</h1\s*>", visible_text, flags=re.IGNORECASE | re.DOTALL)
+    if h1 is None:
+        return
+
+    lead_range = next(
+        ((start, end) for start, end in centered_ranges if start <= h1.start() and h1.end() <= end),
+        None,
+    )
+    lead_has_value = False
+    if lead_range is not None:
+        trailing = visible_text[h1.end():lead_range[1]]
+        lead_has_value = bool(re.search(r"<p\b[^>]*>\s*(?:<[^>]+>\s*)*[^<\s]", trailing, flags=re.IGNORECASE | re.DOTALL))
+    if lead_range is None or not lead_has_value:
+        add_finding(
+            findings,
+            "error",
+            "LEAD_SECTION_NOT_CENTERED",
+            readme,
+            "首标题区域必须由同一个 align=\"center\" 容器包住一级标题和价值说明",
+            line_number(text, h1.start()),
+        )
+
+    first_h2 = re.search(r"(?m)^##\s+", visible_text)
+    lead_end = lead_range[1] if lead_range is not None else h1.end()
+    hero_region_end = first_h2.start() if first_h2 is not None else len(visible_text)
+    hero_region = visible_text[lead_end:hero_region_end]
+    hero = re.search(r"!\[[^\]]*\]\([^\n]+\)|<img\b[^>]*>", hero_region, flags=re.IGNORECASE)
+    if hero is None:
+        return
+
+    hero_start = lead_end + hero.start()
+    hero_end = lead_end + hero.end()
+    hero_range = next(
+        ((start, end) for start, end in centered_ranges if start <= hero_start and hero_end <= end),
+        None,
+    )
+    if hero_range is None:
+        add_finding(
+            findings,
+            "error",
+            "HERO_NOT_CENTERED",
+            readme,
+            "头图必须置于 GitHub 能够保留的 align=\"center\" 容器中",
+            line_number(text, hero_start),
+        )
+        return
+
+    caption_source = re.sub(r"<[^>]+>", "", visible_text[hero_end:hero_range[1]])
+    if not re.search(r"(?m)^\s*(?:图\s+\d|Figure\s+\d)", caption_source, flags=re.IGNORECASE):
+        add_finding(
+            findings,
+            "error",
+            "HERO_CAPTION_NOT_CENTERED",
+            readme,
+            "头图题注必须与头图位于同一个居中容器中",
+            line_number(text, hero_start),
+        )
+
+
+def audit_visual_centering(text: str, readme: Path, findings: list[Finding]) -> None:
+    """Require every table, image, Mermaid block, and its caption to share a centered div."""
+
+    lines = text.splitlines(keepends=True)
+    plain_lines = [line.rstrip("\r\n") for line in lines]
+    offsets: list[int] = []
+    cursor = 0
+    for line in lines:
+        offsets.append(cursor)
+        cursor += len(line)
+
+    def caption_kind(line: str) -> str | None:
+        stripped = re.sub(r"<[^>]+>", "", line).strip()
+        if re.match(r"^(?:表|Table)\s+\d+(?:\.\d+)*[.\s\u3000]", stripped, flags=re.IGNORECASE):
+            return "table"
+        if re.match(r"^(?:图|Figure)\s+\d+(?:\.\d+)*[.\s\u3000]", stripped, flags=re.IGNORECASE):
+            return "figure"
+        return None
+
+    def wrapper_only(line: str) -> bool:
+        return bool(re.fullmatch(r"</?(?:div|picture)(?:\s+[^>]*)?>", line.strip(), flags=re.IGNORECASE))
+
+    def nonblank_before(line_index: int) -> int | None:
+        candidate = line_index - 1
+        while candidate >= 0 and (not plain_lines[candidate].strip() or wrapper_only(plain_lines[candidate])):
+            candidate -= 1
+        return candidate if candidate >= 0 else None
+
+    def nonblank_after(line_index: int) -> int | None:
+        candidate = line_index + 1
+        while candidate < len(plain_lines) and (not plain_lines[candidate].strip() or wrapper_only(plain_lines[candidate])):
+            candidate += 1
+        return candidate if candidate < len(plain_lines) else None
+
+    centered_ranges = centered_div_ranges(text)
+    for kind, start, end in markdown_object_ranges(text):
+        start_line = line_number(text, start) - 1
+        end_line = line_number(text, max(start, end - 1)) - 1
+        before = nonblank_before(start_line)
+        after = nonblank_after(end_line)
+        caption_line = before if kind == "table" else after
+        if caption_line is None or caption_kind(plain_lines[caption_line]) != kind:
+            caption_line = None
+
+        shared_range = next(
+            ((range_start, range_end) for range_start, range_end in centered_ranges if range_start <= start and end <= range_end),
+            None,
+        )
+        if shared_range is None:
+            add_finding(
+                findings,
+                "error",
+                "TABLE_NOT_CENTERED" if kind == "table" else "FIGURE_NOT_CENTERED",
+                readme,
+                "表格必须置于 align=\"center\" 的 div 容器中" if kind == "table" else "图片或 Mermaid 必须置于 align=\"center\" 的 div 容器中",
+                start_line + 1,
+            )
+            continue
+
+        if caption_line is not None:
+            caption_start = offsets[caption_line]
+            caption_end = caption_start + len(lines[caption_line])
+            if not (shared_range[0] <= caption_start and caption_end <= shared_range[1]):
+                add_finding(
+                    findings,
+                    "error",
+                    "VISUAL_CAPTION_NOT_CENTERED",
+                    readme,
+                    "图题或表题必须与对应对象位于同一个居中容器中",
+                    caption_line + 1,
+                )
 
 def extract_targets(text: str) -> tuple[list[tuple[str, str, int]], list[tuple[str, str, int]]]:
     """Extract links and images from Markdown and embedded HTML."""
@@ -667,6 +832,8 @@ def audit_readme_file(
     valid_anchors = set(slugs) | explicit_html_anchors(text)
     links, images = extract_targets(text)
     audit_caption_positions(text, readme, findings, publication_standard)
+    audit_lead_and_hero_centering(text, readme, findings)
+    audit_visual_centering(text, readme, findings)
     audit_chinese_structure(text, readme, findings)
     audit_technical_terms(text, readme, findings)
 
@@ -1084,7 +1251,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--publication-standard",
         choices=("default", "ieee"),
         default="default",
-        help="Use default README captions or the IEEE table-caption exception",
+        help="Compatibility option; current writing rules use table titles above and figure captions below in both modes",
     )
     return parser.parse_args(argv)
 

@@ -1,6 +1,6 @@
 # README 验证协议
 
-## 1. 确定性检查
+## 1 确定性检查
 
 在技能目录运行以下命令：
 
@@ -12,19 +12,28 @@ python scripts/audit_readme.py "<repository-path>" --strict-warnings # 使用仓
 
 中文写作按当前写作技能复读与局部修复，最多两轮，普通格式残留不阻断交付；实际秘密、事实冲突和无法使用的操作仍需处理
 
-每份 README 的所有一级大标题都必须使用 GitHub 能够稳定保留的 HTML 居中方式；Markdown `# 标题` 或未居中的 `<h1>` 返回硬错误 `H1_NOT_CENTERED`
+每份 README 的首标题区域必须由同一个 `align="center"` 容器包住一级标题和价值说明，缺失时返回 `LEAD_SECTION_NOT_CENTERED`
+
+所有一级大标题都必须使用 GitHub 能够稳定保留的 HTML 居中方式；Markdown `# 标题` 或未居中的 `<h1>` 返回 `H1_NOT_CENTERED`
+
+头图存在时必须与图题位于同一个居中容器；对象未居中返回 `HERO_NOT_CENTERED`，图题不在容器内返回 `HERO_CAPTION_NOT_CENTERED`
+
+正文中的全部图片、表格和 Mermaid 必须与对应题注位于同一个 `align="center"` 容器；对象未居中返回 `FIGURE_NOT_CENTERED` 或 `TABLE_NOT_CENTERED`，题注脱离对象容器返回 `VISUAL_CAPTION_NOT_CENTERED`
+
+表题统一放在表格上方，图片和 Mermaid 图题统一放在对象下方；缺失题注返回 `TABLE_CAPTION_MISSING` 或 `FIGURE_CAPTION_MISSING`
 
 确定性检查覆盖以下内容：
 
 - 中英双语结构、本地链接和替代文本
-- 带点十进制编号、题注位置和列表缩进
+- 首标题区域、全部图片、表格、Mermaid 和题注的居中结构
+- 带点十进制编号、表题与图题位置和列表缩进
 - 已有流程图的竖向方向，不用步骤数量判断是否必须配图
 - 技术名称拼写、中文句号和行尾中文分号
 - 已知秘密形状、私有网络地址和用户目录路径
 - SVG XML 结构、活动内容、事件处理器和外部引用
 - 稳定尺寸和常见位图元数据容器
 
-普通 README 使用默认题注位置；明确审核 IEEE 稿件时使用 `--publication-standard ieee`，此时表题在表格上方，图题仍在图形下方
+当前写作规则在普通 README 与 IEEE 稿件中都使用表题在上、图题在下的位置；`--publication-standard ieee` 作为现有调用兼容参数保留，不改变题注位置
 
 默认扫描范围包括中英文 README 及其引用的本地文档和视觉资产
 
@@ -42,7 +51,7 @@ python scripts/audit_readme.py "<repository-path>" --scan-repository # 使用仓
 
 扫描结果会把已应用例外列为提醒，匹配内容、路径或次数发生变化时会成为交付阻断项
 
-## 2. 仓库验证
+## 2 仓库验证
 
 - 第一项，运行仓库已有的格式、测试、构建或文档检查，记录命令和结果
 - 第二项，检查 README 中的安装和最小示例，确认命令与当前版本一致
@@ -52,7 +61,7 @@ python scripts/audit_readme.py "<repository-path>" --scan-repository # 使用仓
 - 第六项，科学图核对轴、单位、样本量、不确定性、数据来源、处理方法和复现入口
 - 第七项，动态徽章与趋势图核对提供方、请求数据、缓存、失效行为和页面末尾位置
 
-## 3. GitHub 渲染
+## 3 GitHub 渲染
 
 使用 GitHub Markdown 应用程序接口或仓库预览确认 HTML、表格、图片、详情块和 Mermaid 标记得到保留
 
@@ -67,7 +76,7 @@ python scripts/validate_render.py "<临时目录>/*.html" # 逐页检查整体�
 
 渲染报告记录实际视口宽度、页面横向溢出、图片加载与主要对象可见性，不用段落比例代替真实视口结果
 
-本地预览依赖 `markdown-it-py`，浏览器检查依赖 `selenium` 和可用的浏览器驱动；本地预览不等于平台实际渲染，流程图源码没有经过图形引擎处理时不能声称图形已验证
+本地预览依赖 `markdown-it-py`，浏览器检查依赖 `selenium` 和可用的浏览器驱动；浏览器检查会读取首标题区域的文字对齐，并比较全部图片、表格及题注与父容器的实际中心位置；本地预览不等于平台实际渲染，流程图源码没有经过图形引擎处理时不能声称图形已验证
 
 预览器按通用标记规则处理子列表，修复历史预览器把两空格缩进误排为同级的差异，渲染逻辑修改后运行 `python scripts/test_render_readme.py`
 
@@ -81,7 +90,7 @@ python scripts/validate_render.py "<临时目录>/*.html" # 逐页检查整体�
 - 代码和表格只在自身区域内滚动
 - 项目动态位于核心内容之后，远程统计失效不影响首次成功路径
 
-## 4. 人工审核
+## 4 人工审核
 
 自动检查无法判断截图是否泄露用户信息、营销声明是否合理、第一证据是否有说服力、科学结论是否成立或章节是否符合真实读者任务
 
@@ -91,6 +100,6 @@ python scripts/validate_render.py "<临时目录>/*.html" # 逐页检查整体�
 
 任一正式版本出现双语、徽章、截图或命令漂移时，重新审核模板和同步门禁
 
-## 5. 交付记录
+## 5 交付记录
 
 交付内容列出修改文件、视觉预览、自动检查、仓库检查、已知限制、未执行事项和远程仓库状态
