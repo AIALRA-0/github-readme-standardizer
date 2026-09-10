@@ -5,9 +5,9 @@ description: Audit, create, or upgrade GitHub repository READMEs with evidence-b
 
 # GitHub README 标准化
 
-## 0. 写作依据与执行范围
+## 0 写作依据与执行范围
 
-中文写作先发现并完整读取当前环境的 `human-readable-technical-writing/SKILL.md`，再完整读取其指定的 `references/format-rules.md` 和 `references/explanation-framework.md`，确认输出没有截断
+中文写作先发现并完整读取当前环境的 `human-readable-technical-writing/SKILL.md`，再按照该入口的当前任务路由完整读取命中的参考文件，确认输出没有截断
 
 该技能是中文表达的唯一维护来源，本技能只补充仓库事实、页面组合和视觉实现，不复制一份可能过期的写作规则
 
@@ -20,13 +20,13 @@ description: Audit, create, or upgrade GitHub repository READMEs with evidence-b
 
 如果中文写作技能不可用，明确缺失内容并按可取得的规则人工复核，不能宣称已应用其最新全文
 
-## 1. 目标
+## 1 目标
 
 把仓库首页说明文件构建成可信的项目入口，让首次访问者能够判断项目价值、完成第一次成功操作、理解风险边界并找到正确协作渠道
 
 保留仓库事实、项目品牌和现有优秀内容，删除无法核对的宣传、失效入口和泄露风险
 
-## 2. 授权边界
+## 2 授权边界
 
 - README 修改授权只覆盖用户指定仓库或工作副本
 - 默认只修改本地文件，不提交、不推送、不创建发布和拉取请求
@@ -34,7 +34,7 @@ description: Audit, create, or upgrade GitHub repository READMEs with evidence-b
 - 不展示真实部署地址、内部域名、用户标识、账号、密码、令牌、私有网络地址和未脱敏截图
 - 不虚构版本、测试结果、兼容范围、采用者、赞助商、评价、性能数字或发布日期
 
-## 3. 项目路由
+## 3 项目路由
 
 - 第一步，读取 [项目类型路由](references/profile-routing.md)，按照主要交付物和首次成功动作选择一个主路由
 
@@ -53,7 +53,7 @@ description: Audit, create, or upgrade GitHub repository READMEs with evidence-b
 
 需要核对模板来源和采用边界时，读取 [研究依据](references/research-basis.md)
 
-## 4. 执行流程
+## 4 执行流程
 
 - 第一步，检查仓库说明、代码、配置、测试、许可证、贡献文件和现有视觉资产，建立可以公开核对的事实清单
 
@@ -65,24 +65,26 @@ description: Audit, create, or upgrade GitHub repository READMEs with evidence-b
 
 - 第五步，优先复用仓库内真实视觉资产；生成图只承担解释或品牌角色，不伪装成运行证据；对截图像素、SVG 源码、图片元数据和外部请求执行脱敏审核
 
-- 第六步，运行 `scripts/audit_readme.py <仓库路径>`，检查双语结构、一级大标题居中、章节编号、题注位置、列表缩进、流程图、术语、中文标点、链接和资源安全，修复确定错误并人工复核提醒；`--strict-warnings` 供项目明确要求提醒也使命令失败时使用
+- 第六步，运行 `scripts/audit_readme.py <仓库路径>`，检查双语结构、首标题区域、全部图片、表格、流程图及题注的居中结构、章节编号、题注位置、列表缩进、术语、中文标点、链接和资源安全，修复确定错误并人工复核提醒；`--strict-warnings` 供项目明确要求提醒也使命令失败时使用
 
 - 第七步，分别使用桌面宽度和移动端宽度渲染 README，再检查亮色、暗色、图片、表格、代码、流程图、链接和页面级横向溢出
 
 - 第八步，交付修改文件、验证结果、剩余证据缺口和远程状态，不把未执行的检查写成通过
 
-## 5. 核心门禁
+## 5 核心门禁
 
 - `README.md` 默认使用简体中文，`README.en.md` 提供英文镜像，项目惯例或用户指令可以调整主次
-- 首屏保留项目名称、一级标题、价值短句和稳定入口，状态及头图按证据与读者需要选择
+- 首标题区域使用一个 `align="center"` 容器统一包住一级标题、价值短句、状态、主要入口和语言入口，缺少的可选对象直接删除
 - 每份 README 的所有一级大标题必须使用语义化 `<h1>`，并通过 `align="center"` 或带 `align="center"` 的外层容器居中；Markdown `# 标题` 和未居中的 `<h1>` 返回硬错误 `H1_NOT_CENTERED`
+- 头图存在时，头图对象和事实性图题必须位于同一个 `align="center"` 容器，分别用 `HERO_NOT_CENTERED` 和 `HERO_CAPTION_NOT_CENTERED` 阻止漏项
+- 当前中文写作技能规定全部图片、表格、流程图及对应题注默认共同居中；本技能在 GitHub README 中落实为同一个 `align="center"` 容器，并通过确定性检查与真实视口渲染验证
 - 顶部只保留能够改变读者下一步的稳定入口，动态徽章和远程图片需要说明用途、隐私影响和维护责任
 - 星标、访问量、下载量、贡献热力和趋势图只放页面末尾，不能代替第一视觉证据、功能证据或质量结论
 - Mermaid 的 `flowchart` 和 `graph` 必须明确使用 `TD` 或 `TB`，横向方向和缺失方向返回硬错误
-- Markdown 章节标题使用 `1.`、`1.1.` 和 `1.1.1.` 等十进制编号，步骤使用自然语言顺序，装饰性圆圈数字和数字 Emoji 返回硬错误
-- 普通 README 的表格、图片和 Mermaid 题注放在对象下方；用户明确指定 IEEE 时表题放在表格上方，图题继续放在图形下方
+- Markdown 章节标题使用 `1`、`1.1` 和 `1.1.1` 等十进制编号，编号后不添加英文句点；步骤使用自然语言顺序，装饰性圆圈数字和数字 Emoji 返回硬错误
+- 表题放在表格上方，图片和 Mermaid 图题放在对象下方；题注与对象位于同一个居中容器
 - 冒号、例如、包括或分为后有两个以上并列项时换行使用列表，项目内部分类继续增加一级缩进
-- 普通顺序操作使用编号步骤，复杂关系确实更容易用图理解时再使用竖向流程图
+- 中文顺序操作遵循当前中文写作技能，使用“第一步、第二步”等项目式步骤；复杂关系确实更容易用图理解时再使用竖向流程图
 - 专业术语、解释顺序、标点和代码说明严格遵循当前中文写作技能，不能以此处的历史简写代替完整规则
 - 定义是一个连续列表项，独立动作分别编号，不能把定义中的分号误判为多个并列项目
 - 不支持合法注释的配置保留原文并逐行解释，不向机器读取的内容插入非法注释
@@ -98,7 +100,7 @@ description: Audit, create, or upgrade GitHub repository READMEs with evidence-b
 - 普通 GitHub 发布任务只审核 README，不在未获得 README 修改授权时重写项目内容
 - README 必须分别完成桌面宽度和移动端宽度渲染检查，不使用固定段落宽高比代替真实视口验收
 
-## 6. 可复用资源
+## 6 可复用资源
 
 - 中文骨架使用 [中文模板](assets/README.zh.template.md)
 - 英文镜像使用 [英文模板](assets/README.en.template.md)
@@ -107,7 +109,7 @@ description: Audit, create, or upgrade GitHub repository READMEs with evidence-b
 - 模板提供信息位置，不授权保留空章节、占位值或示例数据
 - 项目缺少某项事实时删除相关模块，并在审核结果中记录证据缺口
 
-## 7. 交付要求
+## 7 交付要求
 
 交付结果需要包含修改范围、主要结构、视觉证据、验证矩阵、剩余风险和远程仓库状态
 

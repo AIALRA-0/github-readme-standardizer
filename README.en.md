@@ -1,17 +1,18 @@
-<h1 align="center">github-readme-standardizer</h1>
+<div align="center">
+<h1>github-readme-standardizer</h1>
+<p>Help every project explain its purpose and give first-time visitors a clear starting point</p>
+<p><a href="README.md">Chinese guide</a> · <a href="#get-started">Get started</a> · <a href="references/adaptive-template.md">Choose a template</a> · <a href="references/hero-playbook.md">Choose a hero</a></p>
+</div>
 
-Help every project explain its purpose and give first-time visitors a clear starting point
-
-[Chinese guide](README.md) · [Get started](#2-get-started) · [Choose a template](references/adaptive-template.md) · [Choose a hero](references/hero-playbook.md)
-
-![Three documents share headers and body structure, with blue, green and violet modules showing different content arrangements](docs/assets/readme/hero.svg)
-
-Figure 1.1. Three content arrangements share one document structure
+<div align="center">
+<img src="docs/assets/readme/hero.svg" alt="Three documents share headers and body structure, with blue, green and violet modules showing different content arrangements">
+<p>Figure 1.1. Three content arrangements share one document structure</p>
+</div>
 
 Read from left to right: headers and body shapes stay consistent while modules represent a visual overview, grouped capabilities and a content list.
 This is a structural illustration. It explains adaptable composition and does not establish software behavior or successful checks.
 
-## 1. Suitable tasks
+## 1 Suitable tasks
 
 A skill is a reusable set of instructions and supporting files that an assistant reads for a task. This skill helps maintainers organize landing pages consistently while retaining project-specific content. It does not run automatically or grant publication permission.
 
@@ -24,7 +25,9 @@ A skill is a reusable set of instructions and supporting files that an assistant
 Chinese writing follows the complete current rules of the installed `human-readable-technical-writing` skill.
 This repository maintains composition and visual choices without duplicating those writing rules.
 
-## 2. Get started
+<a id="get-started"></a>
+
+## 2 Get started
 
 Use an assistant that can read local skills, with `human-readable-technical-writing` already installed.
 Confirm it can discover this repository's `SKILL.md`.
@@ -45,7 +48,7 @@ The expected result is an evidence-backed report; this example does not request 
 To request changes, replace “Only report” with “Fix confirmed problems and synchronize both landing pages.”
 For publication, name the repository and allowed operations separately and use `github-safe-publish`.
 
-## 3. Consistent and adaptable structure
+## 3 Reusable page composition
 
 Every landing page answers purpose, first use, further use, status and limitations, and help and licensing.
 A small tool may combine its example with first use; a course may replace installation with a reading entry point.
@@ -60,7 +63,7 @@ A small tool may combine its example with first use; a course may replace instal
 Replace placeholders and remove optional content without supporting evidence.
 Preserve existing licenses, citations and third-party attribution.
 
-## 4. Choose a hero image
+## 4 Choose a hero image
 
 Decide what the image helps readers judge before choosing its production method.
 
@@ -77,7 +80,7 @@ This repository uses a text-free structural illustration to avoid tiny mobile la
 - [Privacy review](references/visual-privacy.md): visible and embedded information
 - [Asset notes](docs/assets/readme/hero-notes.md): role and design basis
 
-## 5. Check the result
+## 5 Check the result
 
 Python runs the local documentation checks. The auditor reads files and reports findings without modifying the source; it cannot replace factual review or visual inspection.
 
@@ -95,12 +98,15 @@ python -X utf8 scripts/audit_readme.py .
 
 Test counts are not embedded in the landing page; consult the current [check history](https://github.com/AIALRA-0/github-readme-standardizer/actions).
 
-## 6. Limitations and maintenance
+## 6 Usage limitations
 
 - Automated checks cover implemented rules and cannot establish every fact, image right or reader's understanding
 - Generated images cannot replace real interfaces or measurements
 - Publication must follow target protection rules and user authorization
 - No license file is included; public visibility does not establish permission to copy, modify or redistribute
+
+## 7 Maintenance entry points
+
 - Report ordinary problems through [issues](https://github.com/AIALRA-0/github-readme-standardizer/issues)
 - Follow the [contribution guide](CONTRIBUTING.md) for changes
 - Follow the [security guide](SECURITY.md) for sensitive reports and keep secrets out of public records
