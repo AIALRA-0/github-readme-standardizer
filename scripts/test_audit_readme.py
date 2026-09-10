@@ -77,6 +77,21 @@ def synthetic_windows_user_path() -> str:
 class AuditReadmeTests(unittest.TestCase):
     """Verify observable pass and fail behavior."""
 
+    def test_text_only_landing_page_needs_no_decorative_visual(self) -> None:
+        # A small reading project has a useful entry point without a fabricated image.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "lesson.md").write_text("Reading material", encoding="utf-8")
+            (root / "README.md").write_text(
+                '<h1 align="center">课程</h1>\n\n## 1. 开始阅读\n\n[第一课](lesson.md)\n', encoding="utf-8"
+            )
+            (root / "README.en.md").write_text(
+                '<h1 align="center">Course</h1>\n\n## 1. Start reading\n\n[Lesson](lesson.md)\n', encoding="utf-8"
+            )
+            result = audit_repository(root)
+        self.assertEqual("PASS", result["status"])
+        self.assertEqual([], result["warnings"])
+
     def test_valid_bilingual_repository_passes(self) -> None:
         # Build a minimal bilingual repository with one local visual asset.
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -256,8 +271,8 @@ class AuditReadmeTests(unittest.TestCase):
 
         self.assertNotIn("LIST_NESTING_REQUIRED", {item["code"] for item in result["errors"]})
 
-    def test_three_step_flow_requires_mermaid(self) -> None:
-        # Require a diagram for three observable process nodes and accept a vertical diagram.
+    def test_three_step_flow_allows_prose_or_diagram(self) -> None:
+        # Ordinary steps do not require decorative diagrams; explicit diagrams remain supported.
         steps = "\n\n第一步，读取\n\n第二步，检查\n\n第三步，输出\n"
         diagram = "\n```mermaid\nflowchart TD\nA[读取] --> B[检查]\nB --> C[输出]\n```\n"
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -271,8 +286,23 @@ class AuditReadmeTests(unittest.TestCase):
             (root / "README.en.md").write_text(GOOD_EN + diagram, encoding="utf-8")
             present = audit_repository(root)
 
-        self.assertIn("MERMAID_REQUIRED", {item["code"] for item in missing["errors"]})
+        self.assertEqual("PASS", missing["status"])
         self.assertNotIn("MERMAID_REQUIRED", {item["code"] for item in present["errors"]})
+
+    def test_definition_semicolons_are_not_parallel_items(self) -> None:
+        # Preserve a formal definition without exempting punctuation or a separate invalid list.
+        definition = "\n- 缓存（Cache）：保存可重复使用的结果；用于减少重复读取；需要结果时先查已有副本；适合允许短期复用的读取；它不能代替原始数据\n"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "README.md").write_text(GOOD_ZH + definition, encoding="utf-8")
+            (root / "README.en.md").write_text(GOOD_EN, encoding="utf-8")
+            valid = audit_repository(root)
+            (root / "README.md").write_text(
+                GOOD_ZH + definition + "\n包括：打开文件、修改内容、保存结果\n", encoding="utf-8"
+            )
+            invalid = audit_repository(root)
+        self.assertNotIn("PARALLEL_ITEMS_INLINE", {item["code"] for item in valid["errors"]})
+        self.assertIn("PARALLEL_ITEMS_INLINE", {item["code"] for item in invalid["errors"]})
 
     def test_technical_term_spelling_explanation_and_webp_boundary(self) -> None:
         # Preserve official spelling, require an operational explanation, and reject a fabricated WebP expansion.

@@ -8,7 +8,9 @@
 python scripts/audit_readme.py "<repository-path>" --strict-warnings # 使用仓库路径占位值审核双语 README、链接、资源、编号、Mermaid 和已知敏感模式
 ```
 
-脚本输出 JSON 结构化结果，`errors` 中的每个问题都属于交付阻断项，`warnings` 需要人工确认；正式发布使用 `--strict-warnings`，未确认提醒同样阻止自动合并
+脚本输出结构化结果，`errors` 定位确定问题，`warnings` 提供人工复核线索；本仓库的自动检查使用 `--strict-warnings`，其他项目按照自己的检查要求执行，不能把提醒数量当作中文解释完整性的证明
+
+中文写作按当前写作技能复读与局部修复，最多两轮，普通格式残留不阻断交付；实际秘密、事实冲突和无法使用的操作仍需处理
 
 每份 README 的所有一级大标题都必须使用 GitHub 能够稳定保留的 HTML 居中方式；Markdown `# 标题` 或未居中的 `<h1>` 返回硬错误 `H1_NOT_CENTERED`
 
@@ -16,7 +18,7 @@ python scripts/audit_readme.py "<repository-path>" --strict-warnings # 使用仓
 
 - 中英双语结构、本地链接和替代文本
 - 带点十进制编号、题注位置和列表缩进
-- Mermaid 竖向方向和使用条件
+- 已有流程图的竖向方向，不用步骤数量判断是否必须配图
 - 技术名称拼写、中文句号和行尾中文分号
 - 已知秘密形状、私有网络地址和用户目录路径
 - SVG XML 结构、活动内容、事件处理器和外部引用
@@ -56,14 +58,18 @@ python scripts/audit_readme.py "<repository-path>" --scan-repository # 使用仓
 
 本地预览需要模拟 GitHub 内容宽度，并分别完成桌面宽度和移动端宽度检查；亮色和暗色需要覆盖同一内容范围
 
-先生成不访问外部资源的本地预览：
+先生成本地预览，浏览器只用于查看已审核的本地内容，带远程图片的文档仍可能发出外部请求：
 
 ```powershell
 python scripts/render_readme.py README.md --output-dir "<仓库外的临时目录>" # 生成亮色和暗色 HTML，随后在 1280 像素与 390 像素视口中检查
 python scripts/validate_render.py "<临时目录>/*.html" # 逐页检查整体横向溢出、图片加载和居中大标题
 ```
 
-渲染报告记录实际视口宽度、页面横向溢出、图片加载和主要对象可见性，不使用段落宽高比 `1:1` 或 `2:1` 代替真实视口结果
+渲染报告记录实际视口宽度、页面横向溢出、图片加载与主要对象可见性，不用段落比例代替真实视口结果
+
+本地预览依赖 `markdown-it-py`，浏览器检查依赖 `selenium` 和可用的浏览器驱动；本地预览不等于平台实际渲染，流程图源码没有经过图形引擎处理时不能声称图形已验证
+
+预览器按通用标记规则处理子列表，修复历史预览器把两空格缩进误排为同级的差异，渲染逻辑修改后运行 `python scripts/test_render_readme.py`
 
 渲染结果需要满足以下条件：
 

@@ -1,255 +1,135 @@
-<div align="center">
+<h1 align="center">github-readme-standardizer</h1>
 
-<img src="assets/brand-mark.svg" alt="GitHub README Standardizer 标志，文档、隐私盾牌和验证勾组成安全发布入口" width="132">
+让每个项目都能清楚说明用途，让第一次访问的人知道怎样开始
 
-<h1>GitHub README Standardizer</h1>
+[英文说明](README.en.md) · [开始使用](#2-开始使用) · [选择模板](references/adaptive-template.md) · [选择头图](references/hero-playbook.md)
 
-<p><strong>把仓库首页构建成有证据、可执行、可审计的中英双语项目入口</strong></p>
+![三张文档共享标题和正文结构，蓝色、绿色与紫色模块展示不同内容组合](docs/assets/readme/hero.svg)
 
-<p>项目维护者 · 文档负责人 · 安全审核者</p>
+图 1.1　三种内容共用相同的文档骨架
 
-<p>
-  <img src="docs/assets/readme/badges/status.svg" alt="维护状态：持续维护">
-  <a href="README.en.md"><img src="docs/assets/readme/badges/bilingual.svg" alt="文档语言：中文优先并提供英文版本"></a>
-  <a href="SECURITY.md"><img src="docs/assets/readme/badges/privacy.svg" alt="隐私状态：发布前执行安全门禁"></a>
-  <img src="docs/assets/readme/badges/tests.svg" alt="自动测试：25 项通过">
-</p>
+三张文档保留相同的标题与正文形状，从左到右看各自的内容模块
 
-<p>
-  <a href="#1-项目价值">项目价值</a> ·
-  <a href="#3-标准化流程">标准化流程</a> ·
-  <a href="#4-快速开始">快速开始</a> ·
-  <a href="#5-项目路由">项目路由</a> ·
-  <a href="#7-隐私门禁">隐私门禁</a> ·
-  <a href="#8-验证状态">验证状态</a>
-</p>
+- 左侧蓝色模块表达图文展示
+- 中间绿色模块表达能力组合
+- 右侧紫色模块表达内容列表
 
-<p><a href="README.md">简体中文</a> · <a href="README.en.md">English</a></p>
+这是一张结构示意图，帮助理解共用骨架怎样保留项目差异，无法从图中确认任何软件功能或检查结果
 
-</div>
+## 1. 适合什么任务
 
-<div align="center">
+- 技能（Skill）：供编码助手重复使用的一组指令与配套文件，用来让同类任务遵循一致的方法；助手读取入口后按当前任务选择规则和模板，形成具体修改；适合反复编写项目首页时使用，它本身不会自动运行，也不授予发布权限
 
-<img src="docs/assets/readme/hero.svg" alt="仓库证据依次经过双语写作、隐私门禁、视觉组织和渲染验证，全部硬门禁通过后才能发布" width="100%">
+本技能适合需要统一项目首页、保留各项目特点的维护者
 
-图 1.1　GitHub README Standardizer 的证据驱动发布流程
+- 审计已有首页，定位失效入口与事实缺口
+- 编写中文首页
+- 按同一事实同步英文说明
+- 根据主要交付物选择上手路径
+- 选择或制作能帮助理解的头图
+- 检查本地文件及页面在不同显示条件下的可用性
 
-</div>
+中文表达使用当前安装的 `human-readable-technical-writing` 及其完整规则
+本仓库维护项目结构和视觉选择，不另存一份会逐渐过期的中文写作规范
 
-本文全部数值来自当前仓库文件和本次审核程序输出，HTML 与 SVG 尺寸值取自各文件的版式属性
+## 2. 开始使用
 
-## 1. 项目价值
+- 需要使用能够读取本地技能的编码助手
+- 当前环境应已安装 `human-readable-technical-writing`
 
-GitHub 是托管代码和项目协作记录的平台，README 是访问仓库时首先展示的项目说明
+首次使用前确认助手可以找到本仓库的 `SKILL.md`
 
-GitHub README Standardizer 是面向 Codex 的仓库首页标准化 Skill
+1. 把本仓库作为本地技能提供给助手，入口为 [技能说明](SKILL.md)
+2. 在任务中写明目标仓库及本次处理方式，处理方式选择只读审计或修改首页
+3. 使用下面的请求示例，让助手根据项目实际内容工作
 
-Codex 是能够在授权工作区中读取、修改和验证文件的编码智能体，Skill 是一组可复用执行规则和配套资源
-
-这组规则让不同任务能够采用同一套事实、隐私和质量门禁
-
-这个 Skill 先读取代码、配置、测试、文档和真实视觉资产，再生成中文优先、英文同步的 README，最终使用确定性扫描和 GitHub 渲染结果判断是否可以发布
-
-<div align="center">
-
-<table>
-  <tr>
-    <td width="33%" valign="top"><strong>审核现有 README</strong><br><br>找出事实缺口、失效链接、视觉不足和隐私风险</td>
-    <td width="33%" valign="top"><strong>构建双语首页</strong><br><br>按照项目交付物选择结构，并同步命令、状态和限制</td>
-    <td width="33%" valign="top"><strong>执行发布验收</strong><br><br>扫描文本与资源，检查 GitHub 实际渲染，再决定是否发布</td>
-  </tr>
-</table>
-
-表 1.1　使用入口
-
-</div>
-
-## 2. 核心能力
-
-<div align="center">
-
-| 能力 | 可观察结果 | 证据位置 |
-|---|---|---|
-| 项目类型路由 | 应用、接口、命令行、基础设施、人工智能数据和技术内容采用不同首页结构 | [`references/profile-routing.md`](references/profile-routing.md) |
-| 双语事实同步 | `README.md` 使用简体中文，`README.en.md` 同步命令、状态、图表和限制 | [`references/content-protocol.md`](references/content-protocol.md) |
-| 模块化组合 | 核心模块保持完整，界面、科学图、动态指标等条件模块按证据启用 | [`references/module-catalog.md`](references/module-catalog.md) |
-| 图片生产 | 区分运行证据、解释图和品牌视觉，规定生成输入、格式、主题和后备内容 | [`references/visual-production.md`](references/visual-production.md) |
-| 科学制图 | 约束图形选择、轴、单位、样本、不确定性、数据来源和复现入口 | [`references/scientific-visualization.md`](references/scientific-visualization.md) |
-| UI 与 UX 证据 | 使用合成界面覆盖完整任务，并检查亮色、暗色、窄屏与失败状态 | [`references/ui-ux-evidence.md`](references/ui-ux-evidence.md) |
-| 徽章与项目动态 | 可信状态保留在首屏，星标、下载和趋势只在页面末尾补充 | [`references/metrics-and-badges.md`](references/metrics-and-badges.md) |
-| 视觉隐私 | 同时检查像素、SVG 源码、文件元数据和远程视觉请求 | [`references/visual-privacy.md`](references/visual-privacy.md) |
-| 确定性审核 | Mermaid 是把文字关系渲染成流程图的语法；审核程序检查其方向，错误方向会阻止发布 | [`scripts/audit_readme.py`](scripts/audit_readme.py) |
-| 渲染验收 | GitHub 页面需要正确保留图片、表格、链接、详情块和 Mermaid 标记 | [`references/validation.md`](references/validation.md) |
-
-表 2.1　核心能力与可观察结果
-
-</div>
-
-## 3. 标准化流程
-
-以下流程图说明证据怎样进入 README，以及安全门禁为什么能够阻止不可信发布
-
-<div align="center">
-
-```mermaid
-%% 流程从仓库事实开始，任何硬错误都会返回修订环节
-flowchart TD
-    A[读取代码、配置、测试与现有文档] --> B[建立可公开核对的事实清单]
-    B --> C[选择一个项目主路由]
-    C --> D[编写中文 README]
-    D --> E[同步英文 README]
-    E --> F[按证据组合图片、科学图、界面与项目动态]
-    F --> G[扫描身份、凭据、路径、像素、SVG 与元数据]
-    G --> H{全部硬门禁通过}
-    H -- 否 --> B
-    H -- 是 --> I[检查亮色、暗色、窄屏与 GitHub 渲染]
-    I --> J[提交发布结果与剩余证据边界]
+```text
+请使用 $github-readme-standardizer 审计当前仓库
+完整应用已安装的 $human-readable-technical-writing 最新规则
+只报告首页结构、上手步骤和头图的问题，并给出对应文件证据
 ```
 
-图 3.1　从仓库证据到可信 README 的执行关系
+上面是给助手的请求文本，不是终端命令
+正常结果是带有文件依据的问题说明，当前示例没有要求修改或发布
 
-</div>
+需要改进时，将请求中的“只报告”替换为以下两项要求
 
-## 4. 快速开始
+- 修复已确认的问题
+- 同步中英文首页
 
-运行快速开始前需要满足以下条件：
+需要发布时，另行提供发布要求
 
-- 本机已经配置 Codex Skill 目录
-- 本机已经安装 Python 3.10 或更高版本；这个版本要求来自审核程序使用的联合类型语法
+- 目标仓库
+- 允许的操作
+- 使用 `github-safe-publish` 处理发布
 
-- 第一步，在已经检出的仓库根目录安装 Skill
+## 3. 怎样保持统一又灵活
 
-  ```powershell
-  $SkillSource = (Get-Location).Path # 从当前仓库根目录读取经过审核的 Skill 文件
-  $SkillTarget = Join-Path $env:CODEX_HOME "skills/github-readme-standardizer" # 在已配置的 Codex 目录下建立目标位置
-  New-Item -ItemType Directory -Path $SkillTarget -Force | Out-Null # 确保目标目录存在，避免复制因目录缺失而失败
-  Copy-Item -Path (Join-Path $SkillSource "*") -Destination $SkillTarget -Recurse -Force # 复制 Skill 指令、参考资料、模板和审核程序
-  ```
+首页共同回答用途、第一次操作、进一步使用、状态限制和求助许可
 
-- 第二步，对目标仓库运行完整审核
+- 短工具可以合并示例与上手步骤
+- 课程可以把安装位置替换为阅读入口
 
-  ```powershell
-  python scripts/audit_readme.py "<repository-path>" --scan-repository --strict-warnings # 使用仓库路径占位值扫描 README、源码、测试夹具和视觉资源，未确认提醒阻止正式发布
-  ```
+- [中文模板](assets/README.zh.template.md) 提供精简骨架，不预设安装工具
+- [英文模板](assets/README.en.template.md) 保持相同信息位置
+- [组合方案](references/adaptive-template.md) 说明哪些内容随项目变化，并给出课程仓库的完整使用示范
+- [项目分类](references/profile-routing.md) 根据主要交付物选择内容顺序
+- [可选模块](references/module-catalog.md) 按已有证据增加界面、测量结果或组件关系
+- [中文规则衔接](references/writing-integration.md) 说明怎样在正文落实术语定义与局部复核
 
-- 第三步，读取审核程序返回的 JSON 数据交换格式（JavaScript Object Notation）结果
+- 模板中的占位值必须替换
+- 缺少依据的可选内容应删除
+- 已有许可证、引用和第三方署名按原文保留
 
-  `errors` 中的项目会阻止发布，`warnings` 中的项目需要人工确认；正式发布使用 `--strict-warnings`，程序不会自动修改目标仓库
+## 4. 怎样选择头图
 
-预期结果：审核程序返回 `PASS` 或带有明确问题代码的 `FAIL`，输出不会回显已经识别的完整秘密值
+制作前先确定图片要帮助读者判断的具体问题，以下条件用于选择对应方式
 
-## 5. 项目路由
+- 有代表性真实界面时使用脱敏截图
+- 主要价值是命令结果时展示真实合成输入的输出
+- 需要解释内容或组件关系时制作可编辑结构图
+- 需要表达品牌形象时可以使用明确标为品牌插画的生成图
+- 图片不能增加理解时可以省略头图
 
-Skill 按主要交付物选择一个主路由，混合项目可以增加少量条件模块，避免把多个完整模板机械拼接到同一首页
+本仓库头图使用无文字结构示意，避免小屏文字缩得过小，也方便两种语言共用
 
-<div align="center">
+- [头图方案](references/hero-playbook.md) 提供选择顺序与生成说明模板
+- [制作规范](references/visual-production.md) 说明图片来源与文件保存方式
+- [隐私检查](references/visual-privacy.md) 覆盖图中信息与文件隐藏内容
+- [本图制作说明](docs/assets/readme/hero-notes.md) 记录素材角色与设计依据
 
-| 主路由 | 主要交付物 | 第一视觉证据 | 第一次成功 |
-|---|---|---|---|
-| 用户应用 | 网页、桌面或移动应用 | 脱敏界面截图 | 完成一个安全用户流程 |
-| 开发接口 | 开发库、软件开发工具包或接口组件 | 最小调用与输出 | 完成一次可观察调用 |
-| 命令行工具 | 终端工具或本地自动化程序 | 合成终端演示 | 执行一条安全命令 |
-| 基础设施服务 | 持续运行的服务或控制平面 | 架构与信任边界 | 启动隔离服务并检查健康状态 |
-| 人工智能数据 | 模型、数据集、训练或评测项目 | 任务范围或评测关系 | 使用合成输入完成最小运行 |
-| 技术内容 | 书籍、课程、知识库或规范 | 内容地图 | 打开阅读入口或构建预览 |
+## 5. 怎样检查结果
 
-表 5.1　项目主路由
+- Python 编程语言（Python）：用于编写和执行程序的语言，本仓库用它运行文档检查；解释器读取检查脚本后输出问题记录，原始文件不会被审计程序修改；需要运行下列本地检查时使用，它不代替人工核对事实或实际查看图片
 
-</div>
+本地检查需要已经安装该语言的 3.10 或更高版本，命令在本仓库根目录运行
 
-## 6. 仓库结构
+```powershell
+# 检查本仓库的中英文首页及关联文件
+python -X utf8 scripts/audit_readme.py .
+```
 
-<div align="center">
+- 返回 `PASS` 表示本次机械检查没有发现硬错误
 
-| 路径 | 内容 | 何时读取或执行 |
-|---|---|---|
-| `SKILL.md` | 目标、授权边界、主流程和硬门禁 | 每次调用 Skill 时 |
-| `agents/openai.yaml` | Codex 界面名称、图标和默认提示 | Skill 被发现或调用时 |
-| `assets/README.*.template.md` | 中文优先和英文镜像的完整骨架 | 新建或重构 README 时 |
-| `assets/visual-modules.*.md` | 图片、科学图、界面、稳定性、脱敏和项目动态的双语片段 | 启用条件视觉模块时 |
-| `references/module-catalog.md` | 模块顺序、启用依据和删除规则 | 组合 README 结构时 |
-| `references/visual-*.md` | 图片生产与视觉隐私细则 | 存在任何视觉资产时 |
-| `references/scientific-visualization.md` | 科学图和性能图的语义与复现要求 | 使用实验、评测或基准数据时 |
-| `references/ui-ux-evidence.md` | 界面证据和页面稳定性矩阵 | 项目具有用户界面时 |
-| `references/metrics-and-badges.md` | 徽章、星标、活动与趋势的选择门禁 | 展示动态状态或社区指标时 |
-| `scripts/audit_readme.py` | 只读 README、SVG、图片元数据与隐私审核程序 | 交付前 |
-| `scripts/test_audit_readme.py` | 审核程序的正向与反向测试 | 修改审核逻辑后 |
-| `scripts/render_readme.py` 与 `scripts/validate_render.py` | 生成本地亮色和暗色预览，并在桌面与移动端视口检查溢出、图片和居中大标题 | 正式发布前 |
+  - 阅读提醒并判断其是否适用于当前内容
+  - 按实际文件核对正文事实
+- 返回 `FAIL` 时按以下步骤处理
 
-表 6.1　Skill 文件职责
+  1. 查看 `errors` 中的问题位置
+  2. 修复对应内容
+  3. 重新执行检查
+- 中文写作还需执行已安装写作技能规定的复核，检查器不能证明解释完整
+- 页面预览需覆盖亮色、暗色、桌面和窄屏，具体方法见 [验证说明](references/validation.md)
 
-</div>
+不在首页写入容易过期的测试数量，当前自动检查可在 [检查记录](https://github.com/AIALRA-0/github-readme-standardizer/actions) 核对
 
-## 7. 隐私门禁
+## 6. 限制与维护
 
-仓库发布副本不得保存个人名称、个人邮箱、真实用户标识、密码、访问令牌、应用程序接口密钥、本机绝对路径、私有网络地址或实际部署地址
-
-测试程序需要验证秘密检测能力，因此测试程序会在运行时合成凭据形状和私网地址
-
-完整测试值由多个无敏感含义的片段组成，不会作为源代码字面量进入 Git 版本控制历史
-
-<div align="center">
-
-| 检查对象 | 安全替代值 | 失败后果 |
-|---|---|---|
-| 账号与用户标识 | `synthetic-user` 等明确合成值 | 停止发布并重新生成内容 |
-| 密码、令牌和密钥 | 环境变量名或不可用占位值 | 停止发布并轮换可能暴露的凭据 |
-| 内部域名与部署地址 | `example.com` 或 `.invalid` 保留域名 | 停止发布并替换全部入口 |
-| 本机路径与生产目录 | `<repository-path>` 等语义占位值 | 停止发布并检查关联日志与图片 |
-| 截图和图片元数据 | 合成画面或重新生成的本地矢量图 | 停止发布并重新执行像素审核 |
-| SVG 源码 | 静态路径、形状、文字和仓库内片段引用 | 脚本、事件处理器、外部引用或实体声明会阻止发布 |
-| 远程徽章与统计 | 本地静态状态或仓库原生文字入口 | 无法解释请求、日志、缓存或失效行为时停止接入 |
-
-表 7.1　发布阻断范围
-
-</div>
-
-完整报告流程位于 [`SECURITY.md`](SECURITY.md)，视觉审核细则位于 [`references/visual-privacy.md`](references/visual-privacy.md)，公开问题跟踪不接收秘密值
-
-## 8. 验证状态
-
-以下结果来自 2026-08-29 对当前候选版本执行的检查，后续修改需要重新运行全部门禁
-
-<div align="center">
-
-| 检查对象 | 验证方法 | 当前结果 | 证据边界 |
-|---|---|---|---|
-| Skill 结构与元数据 | Skill Creator `quick_validate.py` | 通过 | 检查命名、前置元数据和脚手架占位 |
-| 审核程序行为 | `python scripts/test_audit_readme.py` | 31 项测试通过 | 覆盖双语、居中大标题、带点编号、题注位置、列表缩进、Mermaid、术语、中文句号、行尾分号、链接、秘密和视觉资源 |
-| 仓库内容 | `audit_readme.py --scan-repository` | 通过，0 个错误和 0 个提醒 | 2 份 README、34 个文本文件、6 个 SVG 和 0 个位图 |
-| 中文可读性 | `Test-HumanReadableChinese.ps1` | 通过，0 个硬错误和 10 个术语提醒 | 检查编号、禁用句式、术语和代码注释 |
-| GitHub 渲染 | 本地 Markdown HTML 与 Playwright 浏览器核对 | 通过 | 7 个表格、6 张本地图、11 个主章节和 1 个 Mermaid；1280 像素桌面宽度与 390 像素移动端宽度均覆盖亮色和暗色，页面无整体横向溢出 |
-
-表 8.1　当前验证范围
-
-</div>
-
-## 9. 限制
-
-- 自动审核无法判断营销声明是否合理，维护者仍需核对代码、测试和发布记录
-- 自动审核无法仅凭文件内容确认截图中所有文字或科学结论是否成立，正式发布仍需像素检查和领域复核
-- Skill 不会自动获得提交、推送、发布或修改仓库设置的权限，远端写入需要用户明确授权
-- 仓库公开可见，但当前没有附带开源许可证；公开访问不等同于获得复制、修改或再分发授权
-
-## 10. 贡献指南
-
-- 可复现缺陷按照 [`CONTRIBUTING.md`](CONTRIBUTING.md) 提交，并使用合成数据构造最小案例
-- 安全问题按照 [`SECURITY.md`](SECURITY.md) 使用私密渠道报告
-- 模板研究和采用边界记录在 [`references/research-basis.md`](references/research-basis.md)
-- Skill 修改后需要同步中文与英文 README，并重新运行测试、隐私扫描和 GitHub 渲染验收
-
-## 11. 项目动态
-
-项目动态位于页面末尾，只补充维护状态，不能代替功能、性能、质量或安全证据
-
-<div align="center">
-
-| 指标 | 当前状态 | 证据来源 | 外部服务 |
-|---|---|---|---|
-| 发布方式 | 默认分支持续更新 | 当前 Git 提交与验证记录 | 不需要 |
-| 自动审核 | 25 项行为测试 | [`scripts/test_audit_readme.py`](scripts/test_audit_readme.py) | 不需要 |
-| 星标与访问趋势 | 未启用 | 当前版本不向第三方统计图片服务发送访问数据 | 无 |
-
-表 11.1　当前项目动态
-
-</div>
+- 自动检查只能识别已经实现的规则，不能确认所有事实、图片使用权或读者是否理解
+- 图片生成不能替代真实界面或测量结果
+- 发布必须遵守目标仓库保护规则及用户授权
+- 当前仓库没有附带许可证文件，不能把公开可见理解为已经获得复制、修改或再分发许可
+- 普通问题可通过 [问题入口](https://github.com/AIALRA-0/github-readme-standardizer/issues) 提交
+- 贡献方法见 [贡献说明](CONTRIBUTING.md)
+- 敏感问题见 [安全说明](SECURITY.md)，不要把秘密放入公开记录
+- 本次结构选择的来源与适用限制见 [研究依据](references/research-basis.md)

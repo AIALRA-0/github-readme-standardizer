@@ -90,7 +90,7 @@ HEADING_PATTERN = re.compile(r"(?m)^(#{2,6})\s+(.+?)\s*$")
 CAPTION_PATTERN = re.compile(r"^(?:表|图|Table|Figure)\s+\d+(?:\.\d+)*[.\s\u3000].*$", flags=re.IGNORECASE)
 CHINESE_PARALLEL_TRIGGER = re.compile(r"(?:：|:|例如|包括|分为)([^\n]+)$")
 CHINESE_PARALLEL_SEPARATOR = re.compile(r"[、，；]|(?:\s(?:和|与|及)\s*)")
-FLOW_SIGNAL_PATTERN = re.compile(r"(?:第一步|第二步|第三步|第四步|第五步|第六步|如果|否则|失败后|重试|返回前一步)")
+TERM_DEFINITION_PATTERN = re.compile(r"^\s*[-*+]\s+[^：\n]+（[^）\n]+）：")
 
 
 def is_reserved_credential_url_fixture(match: re.Match[str]) -> bool:
@@ -419,6 +419,10 @@ def audit_chinese_structure(text: str, readme: Path, findings: list[Finding]) ->
             )
 
     for line_index, line in enumerate(visible.splitlines(), start=1):
+        # A formal definition is one continuous unit; its semicolons separate
+        # explanatory sentences, not independently actionable list items.
+        if TERM_DEFINITION_PATTERN.match(line):
+            continue
         trigger = CHINESE_PARALLEL_TRIGGER.search(line)
         if trigger and len(CHINESE_PARALLEL_SEPARATOR.findall(trigger.group(1))) >= 2:
             add_finding(
@@ -460,11 +464,6 @@ def audit_chinese_structure(text: str, readme: Path, findings: list[Finding]) ->
                 break
             candidate += 1
 
-    flow_signals = FLOW_SIGNAL_PATTERN.findall(visible)
-    if len(flow_signals) >= 3 and not MERMAID_BLOCK_PATTERN.search(text):
-        add_finding(findings, "error", "MERMAID_REQUIRED", readme, "三个以上流程节点、分支、重试或返回动作必须提供 Mermaid 图")
-
-
 def audit_technical_terms(text: str, readme: Path, findings: list[Finding]) -> None:
     """Check official spelling and flag bare first-use operational terms for review."""
 
@@ -489,7 +488,7 @@ def audit_technical_terms(text: str, readme: Path, findings: list[Finding]) -> N
                 "warning",
                 "TERM_EXPLANATION_REVIEW",
                 readme,
-                f"{term} 首次出现时需要说明定义、用途、可观察表现和结果",
+                f"{term} 首次出现需按当前中文写作规则完整定义，并人工核对后续中英文配对",
                 line_number(text, match.start()),
             )
 
@@ -752,8 +751,8 @@ def audit_readme_file(
         re.findall(r"<table(?:\s|>)", visible_text, flags=re.IGNORECASE)
     )
     mermaid_count = len(MERMAID_BLOCK_PATTERN.findall(text))
-    if not images and table_count == 0 and mermaid_count == 0:
-        add_finding(findings, "warning", "NO_VISUAL_EVIDENCE", readme, "README 缺少图片、表格或 Mermaid 关系图")
+    # Plain documentation can be complete without an image or a table.
+    # Whether a visual would help is a contextual writing decision.
 
     return {
         "file": readme.relative_to(root).as_posix(),
